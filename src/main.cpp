@@ -59,8 +59,8 @@
 #endif
 
 #if defined (SEAPUNK)
-#define HUE_START -.1
-#define HUE_END .2
+#define HUE_START .4
+#define HUE_END .75
 #define SATURATION .8
 #endif
 
@@ -109,12 +109,17 @@ void loop(){
     for (byte pix = 0; pix < ARM_LENGTH; pix++){
         // location of the pixel on a 0-RENDER_RANGE scale.
         byte dist = pix * 255 / ARM_LENGTH;
-        byte dist2 = 128 + ((pix * 255) / ARM_LENGTH);
-        // messy, but some sort of least-of-3 distances, allowing wraping.
-        byte delta = modDist(dist, pulse);
-        byte delta2 =modDist(dist2, pulse);  
-        // linear ramp up of brightness, for those within 1/8th of the reference point   
-        float value = max(255 - 16 * min(delta, delta2), 32);
+        byte proximity = 255;
+
+        int n = 3;
+
+        for (int i = 0; i < n; i++){
+            byte hotSpot = dist + i * 256/n;
+            if (hotSpot > 256)
+                hotSpot -= 256; 
+            proximity = min(proximity, modDist(pulse, hotSpot));
+        }
+        float value = max(255 - 32 * proximity, 32);
 
         // hue selection. Mainly driving by c, but with some small shifting along
         // the length of the strand.
@@ -127,14 +132,20 @@ void loop(){
         x -= 1.;
         // sweeps the range. for x from 0 to 1, this function does this:
         // starts at (0, _right_), goes to (.5, _left_), then back to (1, _right)
-        float hue = 255 * (abs(2 * (right - left) * x  - right + left) + left);
+        byte hue = 255 * (abs(2 * (right - left) * x  - right + left) + left);
 
         byte loc = pix;
         #if defined (REVERSED)
         loc = ARM_LENGTH - 1 - pix;
         #endif
 
-        leds[loc] = CHSV(192, 192, value);
+        if (proximity == 1)
+            hue += 128;
+
+        if (hue > 255)
+            hue -= 256;
+
+        leds[loc] = CHSV(hue, 192, value);
         #if defined (MIRRORED)
         leds[STRAND_LENGTH - 1 - loc] = CHSV(hue, 255 * SATURATION, value);
         #endif
