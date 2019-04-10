@@ -50,10 +50,7 @@
 */
 
 //#define RAINBOW
-//define SEAPUNK
-//#define INDIGO
-#define BLUE_GREEN
-//#define HEART
+#define SEAPUNK
 
 #if defined (RAINBOW)
 #define HUE_START 0
@@ -62,27 +59,9 @@
 #endif
 
 #if defined (SEAPUNK)
-#define HUE_START .333
-#define HUE_END .833
+#define HUE_START -.1
+#define HUE_END .2
 #define SATURATION .8
-#endif
-
-#if defined (INDIGO)
-#define HUE_START .666
-#define HUE_END .833
-#define SATURATION 1.
-#endif
-
-#if defined (BLUE_GREEN)
-#define HUE_START .333
-#define HUE_END .666
-#define SATURATION .9
-#endif
-
-#if defined (HElART)
-#define HUE_START .833
-#define HUE_END 1.
-#define SATURATION 1.
 #endif
 
 CRGB leds[STRAND_LENGTH];
@@ -111,24 +90,31 @@ byte getClock(unsigned long mil, byte rate)
     return mil >> (8 - rate) % 256;
 }
 
+byte modDist(byte x, byte y) 
+{
+    return min(min(abs(x - y), abs(x - y + 256)), abs(x - y - 256));
+}
+
 void loop(){
     
     unsigned long t = millis();
-    byte color = getClock(t, 2);
-    byte pulse = inoise8(t / 4.) * .5;
-    byte drift = getClock(t, 3);
-    pulse += drift;
+    byte color = inoise8(t / 4.) * .5; //getClock(t, 2);
+    //byte pulse = inoise8(t / 4.) * .5;
+    //byte drift = getClock(t, 3);
+    byte x = getClock(t, 4);
+    byte pulse = x + 4 * sin((t * PI)/255.0);
     if (pulse > 255)
         pulse -= 255;
 
     for (byte pix = 0; pix < ARM_LENGTH; pix++){
         // location of the pixel on a 0-RENDER_RANGE scale.
         byte dist = pix * 255 / ARM_LENGTH;
-
+        byte dist2 = 128 + ((pix * 255) / ARM_LENGTH);
         // messy, but some sort of least-of-3 distances, allowing wraping.
-        byte delta = min(min(abs(dist - pulse), abs(dist - pulse + 256)), abs(dist - pulse - 255));  
+        byte delta = modDist(dist, pulse);
+        byte delta2 =modDist(dist2, pulse);  
         // linear ramp up of brightness, for those within 1/8th of the reference point   
-        float value = max(255 - 6 * delta, 64);
+        float value = max(255 - 16 * min(delta, delta2), 32);
 
         // hue selection. Mainly driving by c, but with some small shifting along
         // the length of the strand.
@@ -148,7 +134,7 @@ void loop(){
         loc = ARM_LENGTH - 1 - pix;
         #endif
 
-        leds[loc] = CHSV(hue, 255 * SATURATION, value);
+        leds[loc] = CHSV(192, 192, value);
         #if defined (MIRRORED)
         leds[STRAND_LENGTH - 1 - loc] = CHSV(hue, 255 * SATURATION, value);
         #endif
@@ -158,5 +144,5 @@ void loop(){
     // hit exactly 60fps (or whatever) if possible, but takinng another millis()
     // reading, but not sure if there would be a point to that. 
     FastLED.show(); // display this frame
-    FastLED.delay(20);
+    //FastLED.delay(20);
 }
