@@ -98,7 +98,7 @@ byte modDist(byte x, byte y)
 void loop(){
     
     unsigned long t = millis();
-    byte color = inoise8(t / 4.) * .5; //getClock(t, 2);
+    byte color = getClock(t, 2);
     //byte pulse = inoise8(t / 4.) * .5;
     //byte drift = getClock(t, 3);
     byte x = getClock(t, 4);
@@ -127,12 +127,12 @@ void loop(){
         // sweep of a subset of the spectrum. 
         float left = HUE_START;
         float right = HUE_END;
-        float x = color / 255. + pix * .5 / ARM_LENGTH;
-        if (x >= 1)
-        x -= 1.;
+        float xx = color / 255. + pix * .5 / ARM_LENGTH;
+        if (xx >= 1)
+        xx -= 1.;
         // sweeps the range. for x from 0 to 1, this function does this:
         // starts at (0, _right_), goes to (.5, _left_), then back to (1, _right)
-        byte hue = 255 * (abs(2 * (right - left) * x  - right + left) + left);
+        byte hue = 255 * (abs(2 * (right - left) * xx  - right + left) + left);
 
         byte loc = pix;
         #if defined (REVERSED)
