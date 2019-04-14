@@ -52,7 +52,7 @@ void setup()
     Serial.println("Scarf OS 3.0");
 
     //FastLED.addLeds<WS2811, PIN, GRB>(leds, STRAND_LENGTH).setCorrection( TypicalLEDStrip );
-    FastLED.addLeds<APA102, 3, 4, BGR>(leds, STRAND_LENGTH);
+    FastLED.addLeds<APA102, 3, 4, BGR>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(BRIGHTNESS);
 }
 
@@ -143,27 +143,19 @@ void pattern_classic(long t)
 
 void pattern_warm_white(long t)
 {
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        leds[i] = CHSV(23, 102, 128);
-    }
+    fill_solid(leds, STRAND_LENGTH, CRGB(255, 147, 41));
+    fade_video(leds, STRAND_LENGTH, 192);
 }
 
 long last_t = 0;
 
 void sparkle(long t)
 {
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        if (random16(2000) == 0)
-            layer1[i] = CHSV(0, 0, 255);
-        else
-        {
-            layer1[i].r = 0.90 * layer1[i].r;
-            layer1[i].b = 0.96 * layer1[i].b;
-            layer1[i].g = 0.94 * layer1[i].g;
-        }
-    }
+    int spot = random16(500);
+    if (spot < STRAND_LENGTH)
+        layer1[spot] = CHSV(0, 0, 255);
+    
+    fadeUsingColor(layer1,STRAND_LENGTH,CRGB(230, 239, 245));
 
     // leds[t - last_t] = CRGB(255,0,0);
     // last_t = t;
@@ -208,6 +200,9 @@ void loop()
         leds[i] += layer1[i];
     }
 
+    //pattern_warm_white(t);
+    //pattern_rainbow_blast(t);
+
     FastLED.show(); // display this frame
-    FastLED.delay(30);
+    FastLED.delay(16);
 }
