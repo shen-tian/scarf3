@@ -43,6 +43,9 @@
 
 CRGB leds[STRAND_LENGTH];
 
+CRGB layer0[STRAND_LENGTH];
+CRGB layer1[STRAND_LENGTH];
+
 void setup()
 {
     Serial.begin(9600);
@@ -76,8 +79,9 @@ byte modDist(byte x, byte y)
 }
 
 // partymode ala nazgul
-void pattern_rainbow_blast(float clock)
+void pattern_rainbow_blast(long t)
 {
+    float clock = t / 1000.;
     float per_pixel_hue_jump = 600 / STRAND_LENGTH;
     float crawl_speed_factor = 1000;
 
@@ -97,9 +101,8 @@ void pattern_rainbow_blast(float clock)
 #define HUE_END .75
 #define SATURATION .8
 
-void pattern_classic(float clock)
+void pattern_classic(long t)
 {
-    unsigned long t = millis();
     byte color = getClock(t, 2);
     byte pulse = inoise8(t / 4.) * .5;
     byte drift = getClock(t, 3);
@@ -123,7 +126,7 @@ void pattern_classic(float clock)
         // the length of the strand.
 
         // sweep of a subset of the spectrum.
-        float x = color / 255. +  pix * 128. / ARM_LENGTH;
+        float x = color / 255. + pix * 128. / ARM_LENGTH;
         if (x >= 1)
             x -= 1.;
 
@@ -134,15 +137,36 @@ void pattern_classic(float clock)
         loc = ARM_LENGTH - 1 - pix;
 #endif
 
-        leds[loc] = CHSV(hue, 255 * SATURATION, value);
+        layer0[loc] = CHSV(hue, 255 * SATURATION, value);
     }
 }
 
-void pattern_warm_white(float clock)
+void pattern_warm_white(long t)
 {
-    for (int i = 0; i < STRAND_LENGTH; i++){
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
         leds[i] = CHSV(23, 102, 128);
     }
+}
+
+long last_t = 0;
+
+void sparkle(long t)
+{
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
+        if (random16(2000) == 0)
+            layer1[i] = CHSV(0, 0, 255);
+        else
+        {
+            layer1[i].r = 0.90 * layer1[i].r;
+            layer1[i].b = 0.96 * layer1[i].b;
+            layer1[i].g = 0.94 * layer1[i].g;
+        }
+    }
+
+    // leds[t - last_t] = CRGB(255,0,0);
+    // last_t = t;
 }
 
 int mode = 1;
@@ -155,7 +179,7 @@ void cycleModes(long t)
         mode++;
         time_last_switch = t;
     }
-        
+
     if (mode == 2)
         mode = 0;
 }
@@ -166,17 +190,24 @@ void loop()
 
     //cycleModes(t);
 
-    if (mode == 0) 
+    // if (mode == 0)
+    // {
+    //     pattern_rainbow_blast(t);
+    // }
+    // else
+    // {
+    //     pattern_classic(t);
+    // }
+    pattern_classic(t);
+    sparkle(t);
+
+    for (int i = 0; i < STRAND_LENGTH; i++)
     {
-        pattern_rainbow_blast(t / 1000.);    
+        leds[i] = layer0[i];
+        leds[i].fadeLightBy(192);
+        leds[i] += layer1[i];
     }
-    else
-    {
-        pattern_classic(t/ 1000.);
-    }
-    
-    pattern_warm_white(t/1000.);
 
     FastLED.show(); // display this frame
-    FastLED.delay(10);
+    FastLED.delay(30);
 }
