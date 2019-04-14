@@ -22,10 +22,9 @@
  *  * Adafruit Trinket 5V 16Mhz, use pin 0
 */
 
-#define PIN 6
+#define PIN 0
 
-
-#define STRAND_LENGTH 60
+#define STRAND_LENGTH 144
 #define BRIGHTNESS 255
 
 /**
@@ -36,12 +35,11 @@
 //#define MIRRORED
 #define REVERSED
 
-#if defined (MIRRORED)
-#define ARM_LENGTH (STRAND_LENGTH /2)
+#if defined(MIRRORED)
+#define ARM_LENGTH (STRAND_LENGTH / 2)
 #else
 #define ARM_LENGTH STRAND_LENGTH
 #endif
-
 
 /**
     Pattern definition. The program cycles through a range on the wheel, and
@@ -52,13 +50,13 @@
 //#define RAINBOW
 #define SEAPUNK
 
-#if defined (RAINBOW)
+#if defined(RAINBOW)
 #define HUE_START 0
 #define HUE_END 1
 #define SATURATION 1.
 #endif
 
-#if defined (SEAPUNK)
+#if defined(SEAPUNK)
 #define HUE_START .4
 #define HUE_END .75
 #define SATURATION .8
@@ -66,12 +64,14 @@
 
 CRGB leds[STRAND_LENGTH];
 
-void setup() {
-    Serial.begin(9600);   
+void setup()
+{
+    Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
-    
-    FastLED.addLeds<WS2811, PIN, GRB>(leds, STRAND_LENGTH).setCorrection( TypicalLEDStrip );
-    FastLED.setBrightness( BRIGHTNESS );
+
+    //FastLED.addLeds<WS2811, PIN, GRB>(leds, STRAND_LENGTH).setCorrection( TypicalLEDStrip );
+    FastLED.addLeds<APA102, 3, 4, BGR>(leds, STRAND_LENGTH);
+    FastLED.setBrightness(BRIGHTNESS);
 }
 
 // Get a byte that cycles from 0-255, at a specified rate
@@ -90,70 +90,60 @@ byte getClock(unsigned long mil, byte rate)
     return mil >> (8 - rate) % 256;
 }
 
-byte modDist(byte x, byte y) 
+// messy, but some sort of least-of-3 distances, allowing wraping.
+byte modDist(byte x, byte y)
 {
     return min(min(abs(x - y), abs(x - y + 256)), abs(x - y - 256));
 }
 
-void loop(){
-    
+void loop()
+{
+
     unsigned long t = millis();
     byte color = getClock(t, 2);
-    //byte pulse = inoise8(t / 4.) * .5;
-    //byte drift = getClock(t, 3);
-    byte x = getClock(t, 4);
-    byte pulse = x + 4 * sin((t * PI)/255.0);
+    byte pulse = inoise8(t / 4.) * .5;
+    byte drift = getClock(t, 3);
+    pulse += drift;
+    
+    pulse = getClock(t, 4) + 4 * sin((t * PI)/255.0);
+
     if (pulse > 255)
         pulse -= 255;
 
-    for (byte pix = 0; pix < ARM_LENGTH; pix++){
+    for (byte pix = 0; pix < ARM_LENGTH; pix++)
+    {
         // location of the pixel on a 0-RENDER_RANGE scale.
         byte dist = pix * 255 / ARM_LENGTH;
-        byte proximity = 255;
 
-        int n = 3;
-
-        for (int i = 0; i < n; i++){
-            byte hotSpot = dist + i * 256/n;
-            if (hotSpot > 256)
-                hotSpot -= 256; 
-            proximity = min(proximity, modDist(pulse, hotSpot));
-        }
-        float value = max(255 - 32 * proximity, 32);
+        byte delta = modDist(dist, pulse);
+        // linear ramp up of brightness, for those within 1/8th of the reference point
+        float value = max(255 - 6 * delta, 64);
 
         // hue selection. Mainly driving by c, but with some small shifting along
         // the length of the strand.
 
-        // sweep of a subset of the spectrum. 
+        // sweep of a subset of the spectrum.
         float left = HUE_START;
         float right = HUE_END;
-        float xx = color / 255. + pix * .5 / ARM_LENGTH;
-        if (xx >= 1)
-        xx -= 1.;
+        float x = color / 255. + pix * .5 / ARM_LENGTH;
+        if (x >= 1)
+            x -= 1.;
         // sweeps the range. for x from 0 to 1, this function does this:
         // starts at (0, _right_), goes to (.5, _left_), then back to (1, _right)
-        byte hue = 255 * (abs(2 * (right - left) * xx  - right + left) + left);
+        float hue = 255 * (abs(2 * (right - left) * x - right + left) + left);
 
         byte loc = pix;
-        #if defined (REVERSED)
+        #if defined(REVERSED)
         loc = ARM_LENGTH - 1 - pix;
         #endif
 
-        if (proximity == 1)
-            hue += 128;
+        leds[loc] = CHSV(hue, 255 * SATURATION, value);
 
-        if (hue > 255)
-            hue -= 256;
-
-        leds[loc] = CHSV(hue, 192, value);
-        #if defined (MIRRORED)
-        leds[STRAND_LENGTH - 1 - loc] = CHSV(hue, 255 * SATURATION, value);
-        #endif
     }
 
-    // delay 20ms to give max 50fps. Could do something fancier here to try to 
+    // delay 20ms to give max 50fps. Could do something fancier here to try to
     // hit exactly 60fps (or whatever) if possible, but takinng another millis()
-    // reading, but not sure if there would be a point to that. 
+    // reading, but not sure if there would be a point to that.
     FastLED.show(); // display this frame
-    //FastLED.delay(20);
+    FastLED.delay(20);
 }
