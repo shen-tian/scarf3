@@ -41,27 +41,6 @@
 #define ARM_LENGTH STRAND_LENGTH
 #endif
 
-/**
-    Pattern definition. The program cycles through a range on the wheel, and
-    back again. This defines the boundaries. Note that wraparound for the full
-    rainbow is not enabled. Would take special case code.
-*/
-
-//#define RAINBOW
-#define SEAPUNK
-
-#if defined(RAINBOW)
-#define HUE_START 0
-#define HUE_END 1
-#define SATURATION 1.
-#endif
-
-#if defined(SEAPUNK)
-#define HUE_START .4
-#define HUE_END .75
-#define SATURATION .8
-#endif
-
 CRGB leds[STRAND_LENGTH];
 
 void setup()
@@ -96,15 +75,36 @@ byte modDist(byte x, byte y)
     return min(min(abs(x - y), abs(x - y + 256)), abs(x - y - 256));
 }
 
-void loop()
+// partymode ala nazgul
+void pattern_rainbow_blast(float clock)
 {
+    float per_pixel_hue_jump = 600 / STRAND_LENGTH;
+    float crawl_speed_factor = 1000;
 
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
+        leds[i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
+    }
+}
+
+/**
+    Pattern definition. The program cycles through a range on the wheel, and
+    back again. This defines the boundaries. Note that wraparound for the full
+    rainbow is not enabled. Would take special case code.
+*/
+
+#define HUE_START .4
+#define HUE_END .75
+#define SATURATION .8
+
+void pattern_classic(float clock)
+{
     unsigned long t = millis();
     byte color = getClock(t, 2);
     byte pulse = inoise8(t / 4.) * .5;
     byte drift = getClock(t, 3);
     pulse += drift;
-    
+
     // pulse = getClock(t, 4) + 4 * sin((t * PI)/255.0);
 
     if (pulse > 255)
@@ -123,29 +123,60 @@ void loop()
         // the length of the strand.
 
         // sweep of a subset of the spectrum.
-        float left = HUE_START;
-        float right = HUE_END;
-        float x = color / 255. + pix * .5 / ARM_LENGTH;
+        float x = color / 255. +  pix * 128. / ARM_LENGTH;
         if (x >= 1)
             x -= 1.;
-        // sweeps the range. for x from 0 to 1, this function does this:
-        // starts at (0, _right_), goes to (.5, _left_), then back to (1, _right)
-        //float hue = 255 * (abs(2 * (right - left) * x - right + left) + left);
 
-        float hue = 255 * left + cubicwave8(x * 255) * (right - left);
+        float hue = 255 * HUE_START + cubicwave8(x) * (HUE_END - HUE_START);
 
         byte loc = pix;
-        #if defined(REVERSED)
+#if defined(REVERSED)
         loc = ARM_LENGTH - 1 - pix;
-        #endif
+#endif
 
         leds[loc] = CHSV(hue, 255 * SATURATION, value);
-
     }
+}
 
-    // delay 20ms to give max 50fps. Could do something fancier here to try to
-    // hit exactly 60fps (or whatever) if possible, but takinng another millis()
-    // reading, but not sure if there would be a point to that.
+void pattern_warm_white(float clock)
+{
+    for (int i = 0; i < STRAND_LENGTH; i++){
+        leds[i] = CHSV(23, 102, 128);
+    }
+}
+
+int mode = 1;
+long time_last_switch = 0;
+
+void cycleModes(long t)
+{
+    if ((t - time_last_switch) > 2000)
+    {
+        mode++;
+        time_last_switch = t;
+    }
+        
+    if (mode == 2)
+        mode = 0;
+}
+
+void loop()
+{
+    unsigned long t = millis();
+
+    //cycleModes(t);
+
+    if (mode == 0) 
+    {
+        pattern_rainbow_blast(t / 1000.);    
+    }
+    else
+    {
+        pattern_classic(t/ 1000.);
+    }
+    
+    pattern_warm_white(t/1000.);
+
     FastLED.show(); // display this frame
     FastLED.delay(10);
 }
