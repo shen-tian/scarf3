@@ -105,7 +105,7 @@ void loop()
     byte drift = getClock(t, 3);
     pulse += drift;
     
-    pulse = getClock(t, 4) + 4 * sin((t * PI)/255.0);
+    // pulse = getClock(t, 4) + 4 * sin((t * PI)/255.0);
 
     if (pulse > 255)
         pulse -= 255;
@@ -130,7 +130,9 @@ void loop()
             x -= 1.;
         // sweeps the range. for x from 0 to 1, this function does this:
         // starts at (0, _right_), goes to (.5, _left_), then back to (1, _right)
-        float hue = 255 * (abs(2 * (right - left) * x - right + left) + left);
+        //float hue = 255 * (abs(2 * (right - left) * x - right + left) + left);
+
+        float hue = 255 * left + cubicwave8(x * 255) * (right - left);
 
         byte loc = pix;
         #if defined(REVERSED)
@@ -145,5 +147,5 @@ void loop()
     // hit exactly 60fps (or whatever) if possible, but takinng another millis()
     // reading, but not sure if there would be a point to that.
     FastLED.show(); // display this frame
-    FastLED.delay(20);
+    FastLED.delay(10);
 }
