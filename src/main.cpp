@@ -97,7 +97,7 @@ void pattern_rainbow_blast(long t)
     rainbow is not enabled. Would take special case code.
 */
 
-#define HUE_START .4
+#define HUE_START .5
 #define HUE_END .75
 #define SATURATION .8
 
@@ -147,11 +147,39 @@ void pattern_warm_white(long t)
     fade_video(leds, STRAND_LENGTH, 192);
 }
 
-long last_t = 0;
+void patternCloud(long t)
+{
+    CRGB buff[STRAND_LENGTH];
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
+        uint8_t value = inoise8(t / 8, (1000 + i - t / 64) * 10);
+        value = qsub8(value, 64);
+        if (value < 32) value = 0;
+        //value = ease8InOutApprox(value);
+
+        uint8_t hue = inoise8(t / 32, 2000 + i * 5);
+        hue = map8(hue, 120, 220);
+
+        uint8_t sat = inoise8(t/ 16, i * 5);
+        sat = scale8(sat, 100);
+        sat = qadd8(sat, 128);
+        
+        if (i % 1 == 0)
+            buff[i] = CHSV(hue, sat, value);
+        else
+            buff[i] = CRGB::Black;
+        
+    }
+    nblend(layer0, buff, STRAND_LENGTH, 255);
+
+    fade_video(layer0, STRAND_LENGTH, 128);
+}
+
+
 
 void sparkle(long t)
 {
-    int spot = random16(500);
+    int spot = random16(5000);
     if (spot < STRAND_LENGTH)
         layer1[spot] = CHSV(0, 0, 255);
     
@@ -176,6 +204,8 @@ void cycleModes(long t)
         mode = 0;
 }
 
+long last_t = 0;
+
 void loop()
 {
     unsigned long t = millis();
@@ -190,19 +220,21 @@ void loop()
     // {
     //     pattern_classic(t);
     // }
-    pattern_classic(t);
+    patternCloud(t);
+    //pattern_classic(t);
     sparkle(t);
 
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        leds[i] = layer0[i];
-        leds[i].fadeLightBy(192);
-        leds[i] += layer1[i];
-    }
+    memcpy(leds, layer0, sizeof(leds));
 
+    nblend(leds, layer1, STRAND_LENGTH, 168);
+
+    
     //pattern_warm_white(t);
     //pattern_rainbow_blast(t);
 
+    //leds[t - last_t] = CRGB::Teal;
+    last_t = t;
+
     FastLED.show(); // display this frame
-    FastLED.delay(16);
+    FastLED.delay(30);
 }
