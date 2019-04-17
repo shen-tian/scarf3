@@ -1,8 +1,15 @@
 
 #include <FastLED.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
 
 #ifdef __AVR__
 #include <avr/power.h>
+#endif
+
+#if defined(ARDUINO_SAMD_ZERO) && defined(SERIAL_PORT_USBVIRTUAL)
+  // Required for Serial on Zero based boards
+  #define Serial SERIAL_PORT_USBVIRTUAL
 #endif
 
 /**
@@ -41,6 +48,8 @@
 #define ARM_LENGTH STRAND_LENGTH
 #endif
 
+Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x29);
+
 CRGB leds[STRAND_LENGTH];
 
 CRGB layer0[STRAND_LENGTH];
@@ -54,6 +63,13 @@ void setup()
     //FastLED.addLeds<WS2811, PIN, GRB>(leds, STRAND_LENGTH).setCorrection( TypicalLEDStrip );
     FastLED.addLeds<APA102, 3, 4, BGR>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(BRIGHTNESS);
+
+    if(!bno.begin())
+    {
+        /* There was a problem detecting the BNO055 ... check your connections */
+        Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+        while(1);
+    }
 }
 
 // Get a byte that cycles from 0-255, at a specified rate
@@ -147,12 +163,37 @@ void pattern_warm_white(long t)
     fade_video(leds, STRAND_LENGTH, 192);
 }
 
-void patternCloud(long t)
+float u = 1;
+
+float uprightness()
 {
+    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+    
+    float dist = euler.z() - 90;
+    if (dist < -180)
+        dist += 360; 
+
+    float reading = (90 - abs(dist)) / 90;
+
+    u = .99 * u + .01 * reading;
+
+    return reading;
+}
+
+long pos = 0;
+
+void patternCloud(long t, long dt)
+{
+    float up = uprightness();
+
+    Serial.println(up);
+
+    pos += up * dt;
+
     CRGB buff[STRAND_LENGTH];
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
-        uint8_t value = inoise8(t / 8, (1000 + i - t / 64) * 10);
+        uint8_t value = inoise8(t / 8, (1000 + i - pos / 32) * 10);
         value = qsub8(value, 64);
         if (value < 32) value = 0;
         //value = ease8InOutApprox(value);
@@ -172,10 +213,29 @@ void patternCloud(long t)
     }
     nblend(layer0, buff, STRAND_LENGTH, 255);
 
-    fade_video(layer0, STRAND_LENGTH, 128);
+    //fade_video(layer0, STRAND_LENGTH, 128);
 }
 
+void level(long t){
+    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+    
+    float dist = euler.z() - 90;
+    if (dist < -180)
+        dist += 360; 
 
+    int z = abs(90 - abs(dist)) * STRAND_LENGTH / 180;
+    
+    Serial.println(z);
+
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
+        if (i > z)
+            layer0[i] = CRGB::Teal;
+        else
+            layer0[i] = CRGB::Black;
+        
+    }
+}
 
 void sparkle(long t)
 {
@@ -220,13 +280,14 @@ void loop()
     // {
     //     pattern_classic(t);
     // }
-    patternCloud(t);
+    patternCloud(t, t - last_t);
     //pattern_classic(t);
+    //level(t);
     sparkle(t);
 
     memcpy(leds, layer0, sizeof(leds));
 
-    nblend(leds, layer1, STRAND_LENGTH, 168);
+    nblend(leds, layer1, STRAND_LENGTH, 128);
 
     
     //pattern_warm_white(t);
@@ -236,5 +297,15 @@ void loop()
     last_t = t;
 
     FastLED.show(); // display this frame
-    FastLED.delay(30);
+    FastLED.delay(10);
+
+    // imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+
+    // Serial.print("X: ");
+    // Serial.print(euler.x());
+    // Serial.print(" Y: ");
+    // Serial.print(euler.y());
+    // Serial.print(" Z: ");
+    // Serial.print(euler.z());
+    // Serial.println();
 }
