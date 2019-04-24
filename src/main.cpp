@@ -12,26 +12,8 @@
   #define Serial SERIAL_PORT_USBVIRTUAL
 #endif
 
-/**
-   This part is for hardware related config. It allows you to spec the board
-   you are using, along with the LED strand length/brightness. The brightness is
-   typically used to limit max power draw: at 60mA per LED (full white), you can
-   power at most 8 LEDs from the 500mA 5V pin on boards like the Trinket/Arduino
-   Nano. As the strand gets longer, you should use brightness to limit max current
-   draw. However, the typical pattern won't ever reach full white on all LEDs, so
-   the actual max current varies. It's probably best established via direct
-   measurement. An alternative reason to limit brightness is to improve battery
-   life.
+#include "hal/default.h"
 
-   Current configs:
-
- *  * Arduino Nano, use pin 6
- *  * Adafruit Trinket 5V 16Mhz, use pin 0
-*/
-
-#define PIN 0
-
-#define STRAND_LENGTH 144
 #define BRIGHTNESS 255
 
 /**
@@ -49,6 +31,7 @@
 #endif
 
 Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x29);
+boolean imuPresent = true;
 
 CRGB leds[STRAND_LENGTH];
 
@@ -60,15 +43,20 @@ void setup()
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
 
-    //FastLED.addLeds<WS2811, PIN, GRB>(leds, STRAND_LENGTH).setCorrection( TypicalLEDStrip );
-    FastLED.addLeds<APA102, 3, 4, BGR>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
+    #if defined(LED_WS2812)
+    FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, STRAND_LENGTH).setCorrection( TypicalLEDStrip );
+    #endif
+    
+    #if defined(LED_APA102)
+    FastLED.addLeds<APA102, LED_DATA_PIN, LED_CLOCK_PIN, BGR>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
+    #endif
+    
     FastLED.setBrightness(BRIGHTNESS);
 
     if(!bno.begin())
     {
-        /* There was a problem detecting the BNO055 ... check your connections */
-        Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-        while(1);
+        Serial.println("no BNO055 detected");
+        imuPresent = false;
     }
 }
 
@@ -167,6 +155,9 @@ float u = 1;
 
 float uprightness()
 {
+    if (!imuPresent)
+        return .5;
+
     imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
     
     float dist = euler.z() - 90;
@@ -214,27 +205,6 @@ void patternCloud(long t, long dt)
     nblend(layer0, buff, STRAND_LENGTH, 255);
 
     //fade_video(layer0, STRAND_LENGTH, 128);
-}
-
-void level(long t){
-    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-    
-    float dist = euler.z() - 90;
-    if (dist < -180)
-        dist += 360; 
-
-    int z = abs(90 - abs(dist)) * STRAND_LENGTH / 180;
-    
-    Serial.println(z);
-
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        if (i > z)
-            layer0[i] = CRGB::Teal;
-        else
-            layer0[i] = CRGB::Black;
-        
-    }
 }
 
 void sparkle(long t)
