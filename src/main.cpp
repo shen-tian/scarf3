@@ -1,4 +1,3 @@
-
 #include <FastLED.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
@@ -17,18 +16,9 @@
 #define BRIGHTNESS 255
 
 /**
-   Whether the pattern is mirrored, or reversed. This is useful for scarfs where
-   the LEDs are all daisy chained. An alternative is to have the center pixel
-   being the first one, and split the d-out line down either sides
+   Whether the pattern is reversed. 
 */
-//#define MIRRORED
 #define REVERSED
-
-#if defined(MIRRORED)
-#define ARM_LENGTH (STRAND_LENGTH / 2)
-#else
-#define ARM_LENGTH STRAND_LENGTH
-#endif
 
 Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x29);
 boolean imuPresent = true;
@@ -117,10 +107,10 @@ void pattern_classic(long t)
     if (pulse > 255)
         pulse -= 255;
 
-    for (byte pix = 0; pix < ARM_LENGTH; pix++)
+    for (byte pix = 0; pix < STRAND_LENGTH; pix++)
     {
         // location of the pixel on a 0-RENDER_RANGE scale.
-        byte dist = pix * 255 / ARM_LENGTH;
+        byte dist = pix * 255 / STRAND_LENGTH;
 
         byte delta = modDist(dist, pulse);
         // linear ramp up of brightness, for those within 1/8th of the reference point
@@ -130,7 +120,7 @@ void pattern_classic(long t)
         // the length of the strand.
 
         // sweep of a subset of the spectrum.
-        float x = color / 255. + pix * 128. / ARM_LENGTH;
+        float x = color / 255. + pix * 128. / STRAND_LENGTH;
         if (x >= 1)
             x -= 1.;
 
@@ -138,7 +128,7 @@ void pattern_classic(long t)
 
         byte loc = pix;
 #if defined(REVERSED)
-        loc = ARM_LENGTH - 1 - pix;
+        loc = STRAND_LENGTH - 1 - pix;
 #endif
 
         layer0[loc] = CHSV(hue, 255 * SATURATION, value);
@@ -252,7 +242,6 @@ void loop()
     // }
     patternCloud(t, t - last_t);
     //pattern_classic(t);
-    //level(t);
     sparkle(t);
 
     memcpy(leds, layer0, sizeof(leds));
@@ -268,14 +257,4 @@ void loop()
 
     FastLED.show(); // display this frame
     FastLED.delay(10);
-
-    // imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-
-    // Serial.print("X: ");
-    // Serial.print(euler.x());
-    // Serial.print(" Y: ");
-    // Serial.print(euler.y());
-    // Serial.print(" Z: ");
-    // Serial.print(euler.z());
-    // Serial.println();
 }
