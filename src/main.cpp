@@ -1,6 +1,7 @@
 #include <FastLED.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
+#include <Bounce2.h>
 
 #ifdef __AVR__
 #include <avr/power.h>
@@ -28,10 +29,19 @@ CRGB leds[STRAND_LENGTH];
 CRGB layer0[STRAND_LENGTH];
 CRGB layer1[STRAND_LENGTH];
 
+Bounce debouncer = Bounce();
+
 void setup()
 {
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
+
+    #if defined(BUTTON_PIN)
+    pinMode(BUTTON_PIN,INPUT_PULLUP);
+
+    debouncer.attach(BUTTON_PIN);
+    debouncer.interval(20);
+    #endif
 
     #if defined(LED_WS2812)
     FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, STRAND_LENGTH).setCorrection( TypicalLEDStrip );
@@ -167,8 +177,6 @@ void patternCloud(long t, long dt)
 {
     float up = uprightness();
 
-    Serial.println(up);
-
     pos += up * dt;
 
     CRGB buff[STRAND_LENGTH];
@@ -248,9 +256,12 @@ void loop()
 
     nblend(leds, layer1, STRAND_LENGTH, 128);
 
+    debouncer.update();
+    if (debouncer.read() == LOW)
+        pattern_rainbow_blast(t);
     
     //pattern_warm_white(t);
-    //pattern_rainbow_blast(t);
+    //
 
     //leds[t - last_t] = CRGB::Teal;
     last_t = t;
