@@ -8,4 +8,6 @@
 
 #define LED_APA102
 
+#define BUTTON_PIN 1
+
 #endif

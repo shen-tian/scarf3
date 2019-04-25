@@ -91,7 +91,7 @@ void pattern_rainbow_blast(long t)
 
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
-        leds[i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
+        leds[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
     }
 }
 
@@ -258,7 +258,10 @@ void loop()
 
     debouncer.update();
     if (debouncer.read() == LOW)
+    {
         pattern_rainbow_blast(t);
+    }
+
     
     //pattern_warm_white(t);
     //
