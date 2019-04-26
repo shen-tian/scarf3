@@ -1,7 +1,7 @@
 #include <FastLED.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
-#include <Bounce2.h>
+#include <avdweb_Switch.h>
 
 #ifdef __AVR__
 #include <avr/power.h>
@@ -17,7 +17,7 @@
 #define BRIGHTNESS 255
 
 /**
-   Whether the pattern is reversed. 
+   Whether the pattern is reversed.
 */
 #define REVERSED
 
@@ -26,31 +26,26 @@ boolean imuPresent = true;
 
 CRGB leds[STRAND_LENGTH];
 
+// 0 is base, 1 is foreground, 2 is overlay
 CRGB layer0[STRAND_LENGTH];
 CRGB layer1[STRAND_LENGTH];
+CRGB layer2[STRAND_LENGTH];
 
-Bounce debouncer = Bounce();
+Switch pushButton = Switch(BUTTON_PIN);
 
 void setup()
 {
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
 
-    #if defined(BUTTON_PIN)
-    pinMode(BUTTON_PIN,INPUT_PULLUP);
-
-    debouncer.attach(BUTTON_PIN);
-    debouncer.interval(20);
-    #endif
-
     #if defined(LED_WS2812)
     FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, STRAND_LENGTH).setCorrection( TypicalLEDStrip );
     #endif
-    
+
     #if defined(LED_APA102)
     FastLED.addLeds<APA102, LED_DATA_PIN, LED_CLOCK_PIN, BGR>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
     #endif
-    
+
     FastLED.setBrightness(BRIGHTNESS);
 
     if(!bno.begin())
@@ -91,7 +86,7 @@ void pattern_rainbow_blast(long t)
 
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
-        leds[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
+        layer2[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
     }
 }
 
@@ -151,7 +146,20 @@ void pattern_warm_white(long t)
     fade_video(leds, STRAND_LENGTH, 192);
 }
 
+void pattern_standby(long t)
+{
+    fill_solid(leds, STRAND_LENGTH, CRGB::Black);
+
+    if ((t / 1000) % 5 == 0){
+        leds[0] = CRGB::Red;
+        leds[STRAND_LENGTH / 2] = CRGB::Red;
+        leds[STRAND_LENGTH - 1] = CRGB::Red;
+    }
+    fade_video(leds, STRAND_LENGTH, 192);
+}
+
 float u = 1;
+float damp = .99;
 
 float uprightness()
 {
@@ -159,14 +167,14 @@ float uprightness()
         return .5;
 
     imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-    
+
     float dist = euler.z() - 90;
     if (dist < -180)
-        dist += 360; 
+        dist += 360;
 
     float reading = (90 - abs(dist)) / 90;
 
-    u = .99 * u + .01 * reading;
+    u = damp * u + (1 - damp) * reading;
 
     return reading;
 }
@@ -193,79 +201,77 @@ void patternCloud(long t, long dt)
         uint8_t sat = inoise8(t/ 16, i * 5);
         sat = scale8(sat, 100);
         sat = qadd8(sat, 128);
-        
+
         if (i % 1 == 0)
             buff[i] = CHSV(hue, sat, value);
         else
             buff[i] = CRGB::Black;
-        
+
     }
     nblend(layer0, buff, STRAND_LENGTH, 255);
 
     //fade_video(layer0, STRAND_LENGTH, 128);
 }
 
-void sparkle(long t)
+void sparkle(long t, long dt, boolean birth)
 {
-    int spot = random16(5000);
+    int n = 50 * STRAND_LENGTH;
+    if (birth)
+        n = STRAND_LENGTH;
+    int spot = random16(n);
     if (spot < STRAND_LENGTH)
         layer1[spot] = CHSV(0, 0, 255);
-    
+
     fadeUsingColor(layer1,STRAND_LENGTH,CRGB(230, 239, 245));
 
     // leds[t - last_t] = CRGB(255,0,0);
     // last_t = t;
 }
 
-int mode = 1;
-long time_last_switch = 0;
-
-void cycleModes(long t)
-{
-    if ((t - time_last_switch) > 2000)
-    {
-        mode++;
-        time_last_switch = t;
-    }
-
-    if (mode == 2)
-        mode = 0;
-}
-
 long last_t = 0;
+
+double party = 0;
+double rest = 0;
+
+bool standby = false;
 
 void loop()
 {
     unsigned long t = millis();
 
-    //cycleModes(t);
-
-    // if (mode == 0)
-    // {
-    //     pattern_rainbow_blast(t);
-    // }
-    // else
-    // {
-    //     pattern_classic(t);
-    // }
-    patternCloud(t, t - last_t);
-    //pattern_classic(t);
-    sparkle(t);
-
-    memcpy(leds, layer0, sizeof(leds));
-
-    nblend(leds, layer1, STRAND_LENGTH, 128);
-
-    debouncer.update();
-    if (debouncer.read() == LOW)
+    pushButton.poll();
+    if (pushButton.doubleClick())
     {
-        pattern_rainbow_blast(t);
+        double upright = uprightness();
+        if (upright > .25)
+            party = (party < 4) ? 1000 : 0;
+        else if (upright > -.1)
+            rest = (rest < 4) ? 255 : 0;
+        else
+            standby = !standby;
     }
 
-    
-    //pattern_warm_white(t);
-    //
+    if (!standby)
+    {
+        pattern_rainbow_blast(t);
+        patternCloud(t, t - last_t);
+        //pattern_classic(t);
+        sparkle(t, t - last_t, pushButton.on());
 
+        memcpy(leds, layer0, sizeof(leds));
+        nblend(leds, layer1, STRAND_LENGTH, 128);
+
+        nblend(leds, layer2, STRAND_LENGTH, min(party, 255));
+
+        party = .98 * party;
+
+        if (rest > 0) pattern_warm_white(t);
+    }
+    else
+    {
+        pattern_standby(t);
+    }
+    //
     //leds[t - last_t] = CRGB::Teal;
     last_t = t;
 
