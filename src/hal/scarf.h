@@ -7,4 +7,6 @@
 
 #define LED_WS2812
 
+#define BUTTON_PIN 10
+
 #endif

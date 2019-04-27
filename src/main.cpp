@@ -243,12 +243,21 @@ void loop()
     if (pushButton.doubleClick())
     {
         double upright = uprightness();
-        if (upright > .25)
-            party = (party < 4) ? 1000 : 0;
-        else if (upright > -.1)
-            rest = (rest < 4) ? 255 : 0;
+        if ((party > 4) || rest > 4 || standby)
+        {
+            party = 0;
+            rest = 0;
+            standby = false;
+        }
         else
-            standby = !standby;
+        {
+        if (upright > .25)
+            party = 1000;
+        else if (upright > -.1)
+            rest = 255;
+        else
+            standby = true;
+        }
     }
 
     if (!standby)
