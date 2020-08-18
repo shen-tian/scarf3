@@ -17,7 +17,7 @@
 #define BRIGHTNESS 255
 
 /**
-   Whether the pattern is reversed. 
+   Whether the pattern is reversed.
 */
 #define REVERSED
 
@@ -47,7 +47,7 @@ void setup()
 
     FastLED.addLeds<APA102, 11, 13, BGR>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
     FastLED.addLeds<1, WS2811, 10, GRB>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
-    
+
     FastLED.setBrightness(BRIGHTNESS);
 
     if(!bno.begin())
@@ -156,10 +156,10 @@ float uprightness()
         return .5;
 
     imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-    
+
     float dist = euler.z() - 90;
     if (dist < -180)
-        dist += 360; 
+        dist += 360;
 
     float reading = (90 - abs(dist)) / 90;
 
@@ -190,16 +190,26 @@ void patternCloud(long t, long dt)
         uint8_t sat = inoise8(t/ 16, i * 5);
         sat = scale8(sat, 100);
         sat = qadd8(sat, 128);
-        
+
         if (i % 1 == 0)
             buff[i] = CHSV(hue, sat, value);
         else
             buff[i] = CRGB::Black;
-        
+
     }
     nblend(layer0, buff, STRAND_LENGTH, 255);
 
     //fade_video(layer0, STRAND_LENGTH, 128);
+}
+
+void simpleWave(long t, long dt)
+{
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
+        uint8_t val = cubicwave8(- t / 16 + i * 4);
+        // val = dim8_video(val);
+        layer0[i] = CHSV(0, 127, val);
+    }
 }
 
 void sparkle(long t)
@@ -207,7 +217,7 @@ void sparkle(long t)
     int spot = random16(5000);
     if (spot < STRAND_LENGTH)
         layer1[spot] = CHSV(0, 0, 255);
-    
+
     fadeUsingColor(layer1,STRAND_LENGTH,CRGB(230, 239, 245));
 
     // leds[t - last_t] = CRGB(255,0,0);
@@ -245,22 +255,35 @@ void loop()
     // {
     //     pattern_classic(t);
     // }
-    patternCloud(t, t - last_t);
-    //pattern_classic(t);
-    // sparkle(t);
+    // patternCloud(t, t - last_t);
+    pattern_classic(t);
+    simpleWave(t, t - last_t);
+    sparkle(t);
 
     memcpy(leds, layer0, sizeof(leds));
 
-    // nblend(leds, layer1, STRAND_LENGTH, 128);
+    nblend(leds, layer1, STRAND_LENGTH, 128);
 
     debouncer.update();
+
+    // post process
+
+    bool dim = false;
+
     if (debouncer.read() == LOW)
     {
-        pattern_rainbow_blast(t);
+        dim = true;
     }
 
-    
-    //pattern_warm_white(t);
+    if (!dim){
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
+        CHSV tempHSV = rgb2hsv_approximate(leds[i]);
+        leds[i] = CHSV(45, tempHSV.sat, tempHSV.val);
+    }
+    }
+
+    // pattern_warm_white(t);
     //
 
     //leds[t - last_t] = CRGB::Teal;
@@ -268,6 +291,7 @@ void loop()
 
     FastLED.show(); // display this frame
 
+    // pwm outputs
     CHSV color2 = rgb2hsv_approximate(leds[0]);
     analogWrite(7, 32 + leds[0].red / 2);
 
