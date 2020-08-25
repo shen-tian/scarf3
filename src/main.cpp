@@ -93,7 +93,7 @@ void pattern_rainbow_blast(long t)
 
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
-        leds[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
+        layer0[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
     }
 }
 
@@ -217,6 +217,43 @@ void simpleWave(long t, long dt)
     }
 }
 
+// return a cyclical (sine wave) value between min and max
+float xcycle(float t, float period, float min, float max) {
+  return .5*(min+max) - .5*(max-min) * cos(t / period * (2*PI));
+}
+
+// blend linearly between a and b, fraction=0 returns a, fraction=1 returns b
+float xblend(float a, float b, float fraction) {
+  return (1 - fraction) * a + fraction * b;
+}
+
+int brightness_to_value(float brightness, float min_brightness) {
+  return xblend(min_brightness, 1., brightness) * 128;
+}
+
+void pattern_variable_pulses(long t) {
+    float clock = t / 1000.;
+    int BASE_HUE = 175;
+    float density_scale_factor = STRAND_LENGTH / 36.;
+
+    float period = 30; // s
+    float peakedness = 3;
+    float min_pulse_width = 5. * density_scale_factor;
+    float max_pulse_width = STRAND_LENGTH * 2.5;
+    float crawl_speed_factor = 1;  // around 1 is the sweet spot; changing this too much seems to look much worse
+    float min_brightness = .05;
+
+    // cycle in the inverse space to balance short vs. long pulses better
+    float pulse_width = 1. / xcycle(clock, period, 1./min_pulse_width, 1./max_pulse_width);
+    float crawl_offset = crawl_speed_factor * clock;
+    for (int i = 0; i < STRAND_LENGTH; i++) {
+        float brightness = xcycle(STRAND_LENGTH - i + crawl_offset*pulse_width, pulse_width, 0, 1);
+        brightness = pow(brightness, peakedness);
+        int value = brightness_to_value(brightness, min_brightness);
+        layer0[i] = CHSV(BASE_HUE, 255, value);
+    }  
+}
+
 void sparkle(long t)
 {
     int spot = random16(5000);
@@ -229,12 +266,12 @@ void sparkle(long t)
     // last_t = t;
 }
 
-int mode = 1;
+int mode = 0;
 
 void cycleModes(long t)
 {
     mode++;
-    if (mode == 3) {
+    if (mode > 4) {
         mode = 0;
     }
 }
@@ -242,6 +279,11 @@ void cycleModes(long t)
 long last_t = 0;
 
 bool dim = false;
+
+CRGB obuff[STRAND_LENGTH];
+
+u_int8_t fxTargetLevel = 0;
+u_int8_t fxCurrentLevel = 0;
 
 void loop()
 {
@@ -256,6 +298,12 @@ void loop()
             break;
         case 2:
             simpleWave(t, t - last_t);
+            break;
+        case 3:
+            pattern_rainbow_blast(t);
+            break;
+        case 4:
+            pattern_variable_pulses(t);
             break;
         default:
             break;
@@ -282,12 +330,27 @@ void loop()
     }
 
     if (dim){
+        fxTargetLevel = 255;
+    }
+    else
+    {
+        fxTargetLevel = 0;
+    }
+
+    if (fxTargetLevel > fxCurrentLevel)
+        fxCurrentLevel = min(fxCurrentLevel + 4, fxTargetLevel);
+    
+    if (fxTargetLevel < fxCurrentLevel)
+        fxCurrentLevel = max(fxCurrentLevel - 4, fxTargetLevel);
+    
+
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
         CHSV tempHSV = rgb2hsv_approximate(leds[i]);
-        leds[i] = CHSV(45, tempHSV.sat, tempHSV.val);
+        obuff[i] = CHSV(45, tempHSV.sat, tempHSV.val);
     }
-    }
+
+    nblend(leds, obuff, STRAND_LENGTH, fxCurrentLevel);
 
     // pattern_warm_white(t);
     //
@@ -302,5 +365,5 @@ void loop()
     //analogWrite(7, 256);
     digitalWrite(7, HIGH);
 
-    FastLED.delay(10);
+    FastLED.delay(2);
 }
