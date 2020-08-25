@@ -30,6 +30,7 @@ CRGB layer0[STRAND_LENGTH];
 CRGB layer1[STRAND_LENGTH];
 
 Bounce debouncer = Bounce();
+Bounce debouncer2 = Bounce();
 
 void setup()
 {
@@ -38,9 +39,13 @@ void setup()
 
     #if defined(BUTTON_PIN)
     pinMode(BUTTON_PIN,INPUT_PULLUP);
+    pinMode(2, INPUT_PULLUP);
 
     debouncer.attach(BUTTON_PIN);
     debouncer.interval(20);
+
+    debouncer2.attach(2);
+    debouncer2.interval(20);
     #endif
 
     pinMode(7, OUTPUT);
@@ -102,7 +107,7 @@ void pattern_rainbow_blast(long t)
 #define HUE_END .75
 #define SATURATION .8
 
-void pattern_classic(long t)
+void pattern_classic(long t, long dt)
 {
     byte color = getClock(t, 2);
     byte pulse = inoise8(t / 4.) * .5;
@@ -208,7 +213,7 @@ void simpleWave(long t, long dt)
     {
         uint8_t val = cubicwave8(- t / 16 + i * 4);
         // val = dim8_video(val);
-        layer0[i] = CHSV(0, 127, val);
+        layer0[i] = CHSV(192, 255, val);
     }
 }
 
@@ -225,39 +230,37 @@ void sparkle(long t)
 }
 
 int mode = 1;
-long time_last_switch = 0;
 
 void cycleModes(long t)
 {
-    if ((t - time_last_switch) > 2000)
-    {
-        mode++;
-        time_last_switch = t;
-    }
-
-    if (mode == 2)
+    mode++;
+    if (mode == 3) {
         mode = 0;
+    }
 }
 
 long last_t = 0;
+
+bool dim = false;
 
 void loop()
 {
     unsigned long t = millis();
 
-    //cycleModes(t);
+    switch(mode){
+        case 0: 
+            pattern_classic(t, t - last_t);
+            break;
+        case 1:
+            patternCloud(t, t - last_t);
+            break;
+        case 2:
+            simpleWave(t, t - last_t);
+            break;
+        default:
+            break;
+    }
 
-    // if (mode == 0)
-    // {
-    //     pattern_rainbow_blast(t);
-    // }
-    // else
-    // {
-    //     pattern_classic(t);
-    // }
-    // patternCloud(t, t - last_t);
-    pattern_classic(t);
-    simpleWave(t, t - last_t);
     sparkle(t);
 
     memcpy(leds, layer0, sizeof(leds));
@@ -265,17 +268,20 @@ void loop()
     nblend(leds, layer1, STRAND_LENGTH, 128);
 
     debouncer.update();
+    debouncer2.update();
+
+    if (debouncer2.fell()){
+        cycleModes(t);
+    }
 
     // post process
 
-    bool dim = false;
-
-    if (debouncer.read() == LOW)
+    if (debouncer.fell())
     {
-        dim = true;
+        dim = !dim;
     }
 
-    if (!dim){
+    if (dim){
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
         CHSV tempHSV = rgb2hsv_approximate(leds[i]);
@@ -293,7 +299,8 @@ void loop()
 
     // pwm outputs
     CHSV color2 = rgb2hsv_approximate(leds[0]);
-    analogWrite(7, 32 + leds[0].red / 2);
+    //analogWrite(7, 256);
+    digitalWrite(7, HIGH);
 
     FastLED.delay(10);
 }
