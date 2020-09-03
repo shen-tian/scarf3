@@ -2,6 +2,9 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <Bounce2.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_GFX.h>
+#include <Encoder.h>
 
 #ifdef __AVR__
 #include <avr/power.h>
@@ -24,6 +27,8 @@
 Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x29);
 boolean imuPresent = true;
 
+Adafruit_SSD1306 display = Adafruit_SSD1306(128, 64);
+
 CRGB leds[STRAND_LENGTH];
 
 CRGB layer0[STRAND_LENGTH];
@@ -32,10 +37,32 @@ CRGB layer1[STRAND_LENGTH];
 Bounce debouncer = Bounce();
 Bounce debouncer2 = Bounce();
 
+Encoder knobLeft(3, 4);
+
+void initDisplay()
+{
+
+  Serial.println("Display: init");
+  // initialize with the I2C addr 0x3C (for the 128x32)
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.setTextSize(2);
+
+  // upside down
+  display.setRotation(2);
+  display.setTextColor(WHITE);
+
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println("hello.");
+  display.display();
+}
+
 void setup()
 {
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
+
+    initDisplay();
 
     #if defined(BUTTON_PIN)
     pinMode(BUTTON_PIN,INPUT_PULLUP);
@@ -251,7 +278,7 @@ void pattern_variable_pulses(long t) {
         brightness = pow(brightness, peakedness);
         int value = brightness_to_value(brightness, min_brightness);
         layer0[i] = CHSV(BASE_HUE, 255, value);
-    }  
+    }
 }
 
 void sparkle(long t)
@@ -289,21 +316,29 @@ void loop()
 {
     unsigned long t = millis();
 
+    display.clearDisplay();
+    display.setCursor(0, 0);
+
     switch(mode){
-        case 0: 
+        case 0:
             patternCloud(t, t - last_t);
+            display.println("cloud");
             break;
         case 1:
             pattern_classic(t, t - last_t);
+            display.println("classic");
             break;
         case 2:
             simpleWave(t, t - last_t);
+            display.println("wave");
             break;
         case 3:
             pattern_rainbow_blast(t);
+            display.println("rainbow");
             break;
         case 4:
             pattern_variable_pulses(t);
+            display.println("v.pluse");
             break;
         default:
             break;
@@ -330,19 +365,25 @@ void loop()
     }
 
     if (dim){
+        display.println("Dim");
         fxTargetLevel = 255;
     }
     else
     {
+        display.println("Normal");
         fxTargetLevel = 0;
     }
 
+    char buff[50];
+    sprintf(buff, "Post %d", knobLeft.read());
+    display.println(buff);
+
     if (fxTargetLevel > fxCurrentLevel)
         fxCurrentLevel = min(fxCurrentLevel + 4, fxTargetLevel);
-    
+
     if (fxTargetLevel < fxCurrentLevel)
         fxCurrentLevel = max(fxCurrentLevel - 4, fxTargetLevel);
-    
+
 
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
@@ -358,6 +399,7 @@ void loop()
     //leds[t - last_t] = CRGB::Teal;
     last_t = t;
 
+    display.display();
     FastLED.show(); // display this frame
 
     // pwm outputs
