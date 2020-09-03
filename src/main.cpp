@@ -51,7 +51,7 @@ void setup()
     pinMode(7, OUTPUT);
 
     FastLED.addLeds<APA102, 11, 13, BGR>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
-    FastLED.addLeds<1, WS2811, 10, GRB>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
 
     FastLED.setBrightness(BRIGHTNESS);
 
@@ -89,7 +89,7 @@ void pattern_rainbow_blast(long t)
 {
     float clock = t / 1000.;
     float per_pixel_hue_jump = 600 / STRAND_LENGTH;
-    float crawl_speed_factor = 1000;
+    float crawl_speed_factor = 100;
 
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
@@ -197,7 +197,7 @@ void patternCloud(long t, long dt)
         sat = qadd8(sat, 128);
 
         if (i % 1 == 0)
-            buff[i] = CHSV(hue, sat, value);
+            buff[i] = CHSV(hue, sat, value + 32);
         else
             buff[i] = CRGB::Black;
 
@@ -291,10 +291,10 @@ void loop()
 
     switch(mode){
         case 0: 
-            pattern_classic(t, t - last_t);
+            patternCloud(t, t - last_t);
             break;
         case 1:
-            patternCloud(t, t - last_t);
+            pattern_classic(t, t - last_t);
             break;
         case 2:
             simpleWave(t, t - last_t);
