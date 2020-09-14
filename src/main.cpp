@@ -4,6 +4,7 @@
 #include <Bounce2.h>
 #include <Encoder.h>
 
+#include "State.h"
 #include "display.h"
 
 #ifdef __AVR__
@@ -11,8 +12,8 @@
 #endif
 
 #if defined(ARDUINO_SAMD_ZERO) && defined(SERIAL_PORT_USBVIRTUAL)
-  // Required for Serial on Zero based boards
-  #define Serial SERIAL_PORT_USBVIRTUAL
+// Required for Serial on Zero based boards
+#define Serial SERIAL_PORT_USBVIRTUAL
 #endif
 
 #include "hal/default.h"
@@ -37,6 +38,8 @@ Bounce debouncer2 = Bounce();
 
 Encoder knobLeft(3, 4);
 
+State state = State();
+
 void setup()
 {
     Serial.begin(9600);
@@ -44,8 +47,8 @@ void setup()
 
     initDisplay();
 
-    #if defined(BUTTON_PIN)
-    pinMode(BUTTON_PIN,INPUT_PULLUP);
+#if defined(BUTTON_PIN)
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(2, INPUT_PULLUP);
 
     debouncer.attach(BUTTON_PIN);
@@ -53,7 +56,7 @@ void setup()
 
     debouncer2.attach(2);
     debouncer2.interval(20);
-    #endif
+#endif
 
     pinMode(7, OUTPUT);
 
@@ -62,7 +65,7 @@ void setup()
 
     FastLED.setBrightness(BRIGHTNESS);
 
-    if(!bno.begin())
+    if (!bno.begin())
     {
         Serial.println("no BNO055 detected");
         imuPresent = false;
@@ -193,13 +196,14 @@ void patternCloud(long t, long dt)
     {
         uint8_t value = inoise8(t / 8, (1000 + i - pos / 32) * 10);
         value = qsub8(value, 64);
-        if (value < 32) value = 0;
+        if (value < 32)
+            value = 0;
         //value = ease8InOutApprox(value);
 
         uint8_t hue = inoise8(t / 32, 2000 + i * 5);
         hue = map8(hue, 120, 220);
 
-        uint8_t sat = inoise8(t/ 16, i * 5);
+        uint8_t sat = inoise8(t / 16, i * 5);
         sat = scale8(sat, 100);
         sat = qadd8(sat, 128);
 
@@ -207,7 +211,6 @@ void patternCloud(long t, long dt)
             buff[i] = CHSV(hue, sat, value + 32);
         else
             buff[i] = CRGB::Black;
-
     }
     nblend(layer0, buff, STRAND_LENGTH, 255);
 
@@ -218,27 +221,31 @@ void simpleWave(long t, long dt)
 {
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
-        uint8_t val = cubicwave8(- t / 16 + i * 4);
+        uint8_t val = cubicwave8(-t / 16 + i * 4);
         // val = dim8_video(val);
         layer0[i] = CHSV(192, 255, val);
     }
 }
 
 // return a cyclical (sine wave) value between min and max
-float xcycle(float t, float period, float min, float max) {
-  return .5*(min+max) - .5*(max-min) * cos(t / period * (2*PI));
+float xcycle(float t, float period, float min, float max)
+{
+    return .5 * (min + max) - .5 * (max - min) * cos(t / period * (2 * PI));
 }
 
 // blend linearly between a and b, fraction=0 returns a, fraction=1 returns b
-float xblend(float a, float b, float fraction) {
-  return (1 - fraction) * a + fraction * b;
+float xblend(float a, float b, float fraction)
+{
+    return (1 - fraction) * a + fraction * b;
 }
 
-int brightness_to_value(float brightness, float min_brightness) {
-  return xblend(min_brightness, 1., brightness) * 128;
+int brightness_to_value(float brightness, float min_brightness)
+{
+    return xblend(min_brightness, 1., brightness) * 128;
 }
 
-void pattern_variable_pulses(long t) {
+void pattern_variable_pulses(long t)
+{
     float clock = t / 1000.;
     int BASE_HUE = 175;
     float density_scale_factor = STRAND_LENGTH / 36.;
@@ -247,14 +254,15 @@ void pattern_variable_pulses(long t) {
     float peakedness = 3;
     float min_pulse_width = 5. * density_scale_factor;
     float max_pulse_width = STRAND_LENGTH * 2.5;
-    float crawl_speed_factor = 1;  // around 1 is the sweet spot; changing this too much seems to look much worse
+    float crawl_speed_factor = 1; // around 1 is the sweet spot; changing this too much seems to look much worse
     float min_brightness = .05;
 
     // cycle in the inverse space to balance short vs. long pulses better
-    float pulse_width = 1. / xcycle(clock, period, 1./min_pulse_width, 1./max_pulse_width);
+    float pulse_width = 1. / xcycle(clock, period, 1. / min_pulse_width, 1. / max_pulse_width);
     float crawl_offset = crawl_speed_factor * clock;
-    for (int i = 0; i < STRAND_LENGTH; i++) {
-        float brightness = xcycle(STRAND_LENGTH - i + crawl_offset*pulse_width, pulse_width, 0, 1);
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
+        float brightness = xcycle(STRAND_LENGTH - i + crawl_offset * pulse_width, pulse_width, 0, 1);
         brightness = pow(brightness, peakedness);
         int value = brightness_to_value(brightness, min_brightness);
         layer0[i] = CHSV(BASE_HUE, 255, value);
@@ -267,25 +275,22 @@ void sparkle(long t)
     if (spot < STRAND_LENGTH)
         layer1[spot] = CHSV(0, 0, 255);
 
-    fadeUsingColor(layer1,STRAND_LENGTH,CRGB(230, 239, 245));
+    fadeUsingColor(layer1, STRAND_LENGTH, CRGB(230, 239, 245));
 
     // leds[t - last_t] = CRGB(255,0,0);
     // last_t = t;
 }
 
-int mode = 0;
-
 void cycleModes(long t)
 {
-    mode++;
-    if (mode > 4) {
-        mode = 0;
+    state.bgMode++;
+    if (state.bgMode > 4)
+    {
+        state.bgMode = 0;
     }
 }
 
 long last_t = 0;
-
-bool dim = false;
 
 CRGB obuff[STRAND_LENGTH];
 
@@ -296,26 +301,27 @@ void loop()
 {
     unsigned long t = millis();
 
-    updateDisplay(mode);
+    updateDisplay(state);
 
-    switch(mode){
-        case 0:
-            patternCloud(t, t - last_t);
-            break;
-        case 1:
-            pattern_classic(t, t - last_t);
-            break;
-        case 2:
-            simpleWave(t, t - last_t);
-            break;
-        case 3:
-            pattern_rainbow_blast(t);
-            break;
-        case 4:
-            pattern_variable_pulses(t);
-            break;
-        default:
-            break;
+    switch (state.bgMode)
+    {
+    case 0:
+        patternCloud(t, t - last_t);
+        break;
+    case 1:
+        pattern_classic(t, t - last_t);
+        break;
+    case 2:
+        simpleWave(t, t - last_t);
+        break;
+    case 3:
+        pattern_rainbow_blast(t);
+        break;
+    case 4:
+        pattern_variable_pulses(t);
+        break;
+    default:
+        break;
     }
 
     sparkle(t);
@@ -327,7 +333,8 @@ void loop()
     debouncer.update();
     debouncer2.update();
 
-    if (debouncer2.fell()){
+    if (debouncer2.fell())
+    {
         cycleModes(t);
     }
 
@@ -335,10 +342,11 @@ void loop()
 
     if (debouncer.fell())
     {
-        dim = !dim;
+        state.dim = !state.dim;
     }
 
-    if (dim){
+    if (state.dim)
+    {
         fxTargetLevel = 255;
     }
     else
@@ -351,7 +359,6 @@ void loop()
 
     if (fxTargetLevel < fxCurrentLevel)
         fxCurrentLevel = max(fxCurrentLevel - 4, fxTargetLevel);
-
 
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
