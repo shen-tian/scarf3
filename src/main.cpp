@@ -7,15 +7,6 @@
 #include "State.h"
 #include "display.h"
 
-#ifdef __AVR__
-#include <avr/power.h>
-#endif
-
-#if defined(ARDUINO_SAMD_ZERO) && defined(SERIAL_PORT_USBVIRTUAL)
-// Required for Serial on Zero based boards
-#define Serial SERIAL_PORT_USBVIRTUAL
-#endif
-
 #include "hal/default.h"
 
 #define BRIGHTNESS 255
@@ -377,11 +368,5 @@ void loop()
     last_t = t;
 
     FastLED.show(); // display this frame
-
-    // pwm outputs
-    CHSV color2 = rgb2hsv_approximate(leds[0]);
-    //analogWrite(7, 256);
-    digitalWrite(7, HIGH);
-
     FastLED.delay(0);
 }
