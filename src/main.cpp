@@ -272,15 +272,6 @@ void sparkle(long t)
     // last_t = t;
 }
 
-void cycleModes(long t)
-{
-    state.bgMode++;
-    if (state.bgMode > 4)
-    {
-        state.bgMode = 0;
-    }
-}
-
 long last_t = 0;
 
 CRGB obuff[STRAND_LENGTH];
@@ -288,10 +279,45 @@ CRGB obuff[STRAND_LENGTH];
 u_int8_t fxTargetLevel = 0;
 u_int8_t fxCurrentLevel = 0;
 
+int knobPos = 0;
+
 void loop()
 {
     unsigned long t = millis();
 
+    debouncer.update();
+    debouncer2.update();
+
+    if (debouncer2.fell())
+    {
+        state.incSelect();
+    }
+
+    // post process
+
+    if (debouncer.fell())
+    {
+        state.dim = !state.dim;
+    }
+
+    int newKnobPos = knobLeft.read();
+
+    if (newKnobPos - knobPos >= 4)
+    {
+        state.incMode();
+         Serial.printf("knob! %d \n", newKnobPos);
+
+        knobPos = newKnobPos;
+    }
+
+    if (knobPos - newKnobPos >= 4)
+    {
+        state.decMode();
+        Serial.printf("knob! %d \n", newKnobPos);
+        knobPos = newKnobPos;
+    }
+
+   
     updateDisplay(state);
 
     switch (state.bgMode)
@@ -321,21 +347,6 @@ void loop()
 
     nblend(leds, layer1, STRAND_LENGTH, 128);
 
-    debouncer.update();
-    debouncer2.update();
-
-    if (debouncer2.fell())
-    {
-        cycleModes(t);
-    }
-
-    // post process
-
-    if (debouncer.fell())
-    {
-        state.dim = !state.dim;
-    }
-
     if (state.dim)
     {
         fxTargetLevel = 255;
@@ -358,12 +369,6 @@ void loop()
     }
 
     nblend(leds, obuff, STRAND_LENGTH, fxCurrentLevel);
-
-    // pattern_warm_white(t);
-    //
-
-    // leds[t - last_t] = CRGB::Teal;
-    //Serial.printf("%d\n", t - last_t);
 
     last_t = t;
 

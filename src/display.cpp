@@ -7,42 +7,71 @@ void initDisplay()
     lcd.begin();
 }
 
+int lineHeight = 16;
+
 void updateDisplay(State &state)
 {
     lcd.clearBuffer();
-    lcd.setDrawColor(1);
-    lcd.setFont(u8g2_font_t0_11_mf);
-    lcd.drawRFrame(20, 5, 30, 22, 7);
 
+    lcd.setFont(u8g2_font_t0_13_mf);
+    lcd.drawRFrame(40, 5, 30, 22, 7);
+
+    if (state.selectedIdx == 0)
+    {
+        lcd.setDrawColor(0);
+    }
+    else
+    {
+        lcd.setDrawColor(1);
+    }
+    
     switch (state.bgMode)
     {
     case 0:
-        lcd.drawStr(0, 12, "cloud");
+        lcd.drawStr(0, lineHeight, "cloud");
         break;
     case 1:
-        lcd.drawStr(0, 12, "classic");
+        lcd.drawStr(0, lineHeight, "classic");
         break;
     case 2:
-        lcd.drawStr(0, 12, "wave");
+        lcd.drawStr(0, lineHeight, "wave");
         break;
     case 3:
-        lcd.drawStr(0, 12, "rainbow");
+        lcd.drawStr(0, lineHeight, "rainbow");
         break;
     case 4:
-        lcd.drawStr(0, 12, "v.pluse");
+        lcd.drawStr(0, lineHeight, "v.pluse");
         break;
     default:
         break;
     }
 
-    if (state.dim)
+        if (state.selectedIdx == 1)
     {
-        lcd.drawStr(0, 24, "dim");
+        lcd.setDrawColor(0);
     }
     else
     {
-        lcd.drawStr(0, 24, "bright");
+        lcd.setDrawColor(1);
     }
+
+    char buffer[16];
+    sprintf(buffer, "%d", state.fooParam);
+    lcd.drawStr(64, lineHeight, buffer);
+
+    lcd.setDrawColor(1);
+
+    if (state.dim)
+    {
+        lcd.drawStr(0, lineHeight * 2, "dim");
+    }
+    else
+    {
+        lcd.drawStr(0, lineHeight * 2, "bright");
+    }
+
+    lcd.setFont(u8g2_font_open_iconic_play_2x_t);
+    lcd.drawGlyph(0, 63, 0x0040 + 5);
 
     lcd.sendBuffer();
 }
