@@ -25,30 +25,34 @@ void updateDisplay(State &state)
         lcd.setDrawColor(1);
     }
 
-    switch (state.bgMode)
+    if (state.selectedLayer == 1)
     {
-    case 0:
-        lcd.drawStr(0, lineHeight, "cloud");
-        break;
-    case 1:
-        lcd.drawStr(0, lineHeight, "classic");
-        break;
-    case 2:
-        lcd.drawStr(0, lineHeight, "wave");
-        break;
-    case 3:
-        lcd.drawStr(0, lineHeight, "rainbow");
-        break;
-    case 4:
-        lcd.drawStr(0, lineHeight, "v.pluse");
-        break;
-    default:
-        break;
+        switch (state.bgMode)
+        {
+        case 0:
+            lcd.drawStr(0, lineHeight, "cloud");
+            break;
+        case 1:
+            lcd.drawStr(0, lineHeight, "classic");
+            break;
+        case 2:
+            lcd.drawStr(0, lineHeight, "wave");
+            break;
+        case 3:
+            lcd.drawStr(0, lineHeight, "rainbow");
+            break;
+        case 4:
+            lcd.drawStr(0, lineHeight, "v.pluse");
+            break;
+        default:
+            break;
+        }
     }
+    char buffer[16];
+    sprintf(buffer, "%d", state.selectedLayer);
+    lcd.drawStr(64, lineHeight, buffer);
 
     lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
-
-    char buffer[16];
 
     for (int i = 0; i < 6; i++)
     {
@@ -61,7 +65,7 @@ void updateDisplay(State &state)
             lcd.setDrawColor(1);
         }
 
-        sprintf(buffer, "%03d", state.params[state.bgMode][i]);
+        sprintf(buffer, "%03d", state.visibleParam(i));
         lcd.drawStr(14 * i, 2 * lineHeight, buffer);
     }
 
@@ -70,7 +74,7 @@ void updateDisplay(State &state)
     lcd.setFont(u8g2_font_open_iconic_play_2x_t);
     lcd.drawGlyph(0, 63, 0x0040 + 5);
 
-    lcd.drawXBM(64,3 * lineHeight, 13, 13, dialXBM[state.params[state.bgMode][2] / 16]);
+    lcd.drawXBM(64, 3 * lineHeight, 13, 13, dialXBM[state.visibleParam(2) / 16]);
 
     lcd.sendBuffer();
 }

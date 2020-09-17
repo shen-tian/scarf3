@@ -26,6 +26,7 @@ CRGB layer1[STRAND_LENGTH];
 
 Bounce debouncer = Bounce();
 Bounce debouncer2 = Bounce();
+Bounce debouncer3 = Bounce();
 
 Encoder knobLeft(3, 4);
 
@@ -42,12 +43,15 @@ void setup()
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(2, INPUT_PULLUP);
 
-    debouncer.attach(BUTTON_PIN);
+    debouncer.attach(1);
     debouncer.interval(20);
 
     debouncer2.attach(2);
     debouncer2.interval(20);
 #endif
+
+    debouncer3.attach(0);
+    debouncer3.interval(20);
 
     pinMode(7, OUTPUT);
 
@@ -214,7 +218,7 @@ void simpleWave(long t, long dt, State &state)
     {
         uint8_t val = cubicwave8(-t / 16 + i * 4);
         // val = dim8_video(val);
-        layer0[i] = CHSV(state.params[2][0], 255 - state.params[2][1], val);
+        layer0[i] = CHSV(state.patternParams[2][0], 255 - state.patternParams[2][1], val);
     }
 }
 
@@ -238,7 +242,7 @@ int brightness_to_value(float brightness, float min_brightness)
 void pattern_variable_pulses(long t, State &state)
 {
     float clock = t / 1000.;
-    int BASE_HUE = state.params[4][0];
+    int BASE_HUE = 175;
     float density_scale_factor = STRAND_LENGTH / 36.;
 
     float period = 30; // s
@@ -287,17 +291,23 @@ void loop()
 
     debouncer.update();
     debouncer2.update();
+    debouncer3.update();
+
+    if (debouncer3.fell())
+    {
+        state.zeroSelected();
+    }
 
     if (debouncer2.fell())
     {
-        state.incSelect();
+        state.cycleParam();
     }
 
     // post process
 
     if (debouncer.fell())
     {
-        state.dim = !state.dim;
+        state.cycleLayer();
     }
 
     int newKnobPos = knobLeft.read();
