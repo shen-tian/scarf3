@@ -7,14 +7,38 @@ void initDisplay()
     lcd.begin();
 }
 
-int lineHeight = 16;
+void drawParam(uint8_t x, uint8_t y, uint8_t value, bool selected)
+{
+
+    lcd.setDrawColor(selected ? 1 : 0);
+    lcd.drawBox(x, y, 15, 22);
+
+    lcd.setDrawColor(selected ? 0 : 1);
+    lcd.drawXBM(x + 1, y + 1, 13, 13, dialXBM[value / 13]);
+
+    char buffer[3];
+    sprintf(buffer, "%03d", value);
+    lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
+    lcd.drawStr(x + 2, y + 21, buffer);
+}
+
+void drawLayer(uint8_t x, uint8_t y, bool selected)
+{
+    if (selected)
+    {
+        lcd.setDrawColor(1);
+        lcd.drawRBox(x, y, 9, 16, 1);
+    }
+    lcd.setDrawColor(selected ? 0 : 1);
+    lcd.drawBox(x + 3, y + 3, 3, 10);
+}
 
 void updateDisplay(State &state)
 {
     lcd.clearBuffer();
 
-    lcd.setFont(u8g2_font_t0_13_mf);
-    lcd.drawRFrame(40, 5, 30, 22, 7);
+    lcd.setFont(u8g2_font_profont10_mf);
+    // lcd.drawRFrame(40, 5, 30, 22, 7);
 
     if (state.selectedIdx == 0)
     {
@@ -30,51 +54,41 @@ void updateDisplay(State &state)
         switch (state.bgMode)
         {
         case 0:
-            lcd.drawStr(0, lineHeight, "cloud");
+            lcd.drawStr(10, 11, "Cloud");
             break;
         case 1:
-            lcd.drawStr(0, lineHeight, "classic");
+            lcd.drawStr(10, 11, "Classic");
             break;
         case 2:
-            lcd.drawStr(0, lineHeight, "wave");
+            lcd.drawStr(10, 11, "Wave");
             break;
         case 3:
-            lcd.drawStr(0, lineHeight, "rainbow");
+            lcd.drawStr(10, 11, "Rainbow");
             break;
         case 4:
-            lcd.drawStr(0, lineHeight, "v.pluse");
+            lcd.drawStr(10, 11, "V.Pulse");
             break;
         default:
             break;
         }
     }
-    char buffer[16];
-    sprintf(buffer, "%d", state.selectedLayer);
-    lcd.drawStr(64, lineHeight, buffer);
 
-    lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
-
-    for (int i = 0; i < 6; i++)
-    {
-        if (state.selectedIdx == i + 1)
-        {
-            lcd.setDrawColor(0);
-        }
-        else
-        {
-            lcd.setDrawColor(1);
-        }
-
-        sprintf(buffer, "%03d", state.visibleParam(i));
-        lcd.drawStr(14 * i, 2 * lineHeight, buffer);
+    for (int i = 0; i < 4; i++){
+        uint8_t y = (3 - i) * 16;
+        drawLayer(0, y, (state.selectedLayer == i));
     }
 
     lcd.setDrawColor(1);
+    lcd.drawFrame(8,0,120,65);
 
-    lcd.setFont(u8g2_font_open_iconic_play_2x_t);
-    lcd.drawGlyph(0, 63, 0x0040 + 5);
+    for (int i = 0; i < 6; i++)
+    {
+        uint8_t x = 128 - (16 * 3) + (i % 3) * 16;
+        uint8_t y = 1 + 22 * (i / 3);
+        drawParam(x, y, state.visibleParam(i), (state.selectedIdx == i + 1));
+    }
 
-    lcd.drawXBM(64, 3 * lineHeight, 13, 13, dialXBM[state.visibleParam(2) / 16]);
+    //lcd.drawGlyph(0, 63, 0x0040 + 5);
 
     lcd.sendBuffer();
 }
