@@ -1,22 +1,23 @@
 #include "State.h"
 
-void State::incMode()
+void State::incSelected()
 {
-    if (selectedIdx == 0)
+    switch (selectedIdx)
     {
+    case 0:
         bgMode++;
         if (bgMode > 4)
         {
             bgMode = 0;
         }
-    }
-    else if (selectedIdx == 1)
-    {
-        fooParam++;
+        break;
+    default:
+        params[bgMode][selectedIdx - 1]+=8;
+        break;
     }
 }
 
-void State::decMode()
+void State::decSelected()
 {
     switch (selectedIdx)
     {
@@ -28,8 +29,8 @@ void State::decMode()
         }
 
         break;
-    case 1:
-        fooParam--;
+    default:
+        params[bgMode][selectedIdx - 1]-=8;
         break;
     }
 }
@@ -37,6 +38,6 @@ void State::decMode()
 void State::incSelect()
 {
     selectedIdx++;
-    if (selectedIdx > 1)
+    if (selectedIdx > 6)
         selectedIdx = 0;
 }

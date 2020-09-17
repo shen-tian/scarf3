@@ -24,7 +24,7 @@ void updateDisplay(State &state)
     {
         lcd.setDrawColor(1);
     }
-    
+
     switch (state.bgMode)
     {
     case 0:
@@ -46,32 +46,31 @@ void updateDisplay(State &state)
         break;
     }
 
-        if (state.selectedIdx == 1)
-    {
-        lcd.setDrawColor(0);
-    }
-    else
-    {
-        lcd.setDrawColor(1);
-    }
+    lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
 
     char buffer[16];
-    sprintf(buffer, "%d", state.fooParam);
-    lcd.drawStr(64, lineHeight, buffer);
+
+    for (int i = 0; i < 6; i++)
+    {
+        if (state.selectedIdx == i + 1)
+        {
+            lcd.setDrawColor(0);
+        }
+        else
+        {
+            lcd.setDrawColor(1);
+        }
+
+        sprintf(buffer, "%03d", state.params[state.bgMode][i]);
+        lcd.drawStr(14 * i, 2 * lineHeight, buffer);
+    }
 
     lcd.setDrawColor(1);
 
-    if (state.dim)
-    {
-        lcd.drawStr(0, lineHeight * 2, "dim");
-    }
-    else
-    {
-        lcd.drawStr(0, lineHeight * 2, "bright");
-    }
-
     lcd.setFont(u8g2_font_open_iconic_play_2x_t);
     lcd.drawGlyph(0, 63, 0x0040 + 5);
+
+    lcd.drawXBM(64,3 * lineHeight, 13, 13, dialXBM[state.params[state.bgMode][2] / 16]);
 
     lcd.sendBuffer();
 }

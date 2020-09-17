@@ -208,13 +208,13 @@ void patternCloud(long t, long dt)
     //fade_video(layer0, STRAND_LENGTH, 128);
 }
 
-void simpleWave(long t, long dt)
+void simpleWave(long t, long dt, State &state)
 {
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
         uint8_t val = cubicwave8(-t / 16 + i * 4);
         // val = dim8_video(val);
-        layer0[i] = CHSV(192, 255, val);
+        layer0[i] = CHSV(state.params[2][0], 255 - state.params[2][1], val);
     }
 }
 
@@ -235,10 +235,10 @@ int brightness_to_value(float brightness, float min_brightness)
     return xblend(min_brightness, 1., brightness) * 128;
 }
 
-void pattern_variable_pulses(long t)
+void pattern_variable_pulses(long t, State &state)
 {
     float clock = t / 1000.;
-    int BASE_HUE = 175;
+    int BASE_HUE = state.params[4][0];
     float density_scale_factor = STRAND_LENGTH / 36.;
 
     float period = 30; // s
@@ -304,16 +304,13 @@ void loop()
 
     if (newKnobPos - knobPos >= 4)
     {
-        state.incMode();
-         Serial.printf("knob! %d \n", newKnobPos);
-
+        state.incSelected();
         knobPos = newKnobPos;
     }
 
     if (knobPos - newKnobPos >= 4)
     {
-        state.decMode();
-        Serial.printf("knob! %d \n", newKnobPos);
+        state.decSelected();
         knobPos = newKnobPos;
     }
 
@@ -329,13 +326,13 @@ void loop()
         pattern_classic(t, t - last_t);
         break;
     case 2:
-        simpleWave(t, t - last_t);
+        simpleWave(t, t - last_t, state);
         break;
     case 3:
         pattern_rainbow_blast(t);
         break;
     case 4:
-        pattern_variable_pulses(t);
+        pattern_variable_pulses(t, state);
         break;
     default:
         break;
