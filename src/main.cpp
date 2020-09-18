@@ -218,7 +218,7 @@ void simpleWave(long t, long dt, State &state)
     {
         uint8_t val = cubicwave8(-t / 16 + i * 4);
         // val = dim8_video(val);
-        layer0[i] = CHSV(state.patternParams[2][0], 255 - state.patternParams[2][1], val);
+        layer0[i] = CHSV(state.globalParams[0], 255 - state.patternParams[2][1], val);
     }
 }
 
@@ -260,13 +260,13 @@ void pattern_variable_pulses(long t, State &state)
         float brightness = xcycle(STRAND_LENGTH - i + crawl_offset * pulse_width, pulse_width, 0, 1);
         brightness = pow(brightness, peakedness);
         int value = brightness_to_value(brightness, min_brightness);
-        layer0[i] = CHSV(BASE_HUE, 255, value);
+        layer0[i] = CHSV(state.globalParams[0], 255, value);
     }
 }
 
 void sparkle(long t)
 {
-    int spot = random16(5000);
+    int spot = random16(20 * (255 - state.globalParams[1]));
     if (spot < STRAND_LENGTH)
         layer1[spot] = CHSV(0, 0, 255);
 

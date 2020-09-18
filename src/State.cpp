@@ -52,10 +52,10 @@ void State::decSelected()
         switch (selectedIdx)
         {
         case 0:
-            bgMode++;
-            if (bgMode > 4)
+            bgMode--;
+            if (bgMode < 0)
             {
-                bgMode = 0;
+                bgMode = 4;
             }
             break;
         default:

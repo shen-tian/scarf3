@@ -38,21 +38,37 @@ void drawLayer(uint8_t x, uint8_t y, bool selected)
 void drawBeat(uint8_t x, uint8_t y, float bpm, int beat)
 {
     char buffer[5];
-    sprintf(buffer, "%5.1f", bpm);
-    lcd.setFont(u8g2_font_profont17_mf);
+    float intPart, fracPart;
+    fracPart = modff(bpm , &intPart);
+    sprintf(buffer, "%3.0f", intPart);
+    lcd.setFont(u8g2_font_t0_11b_mn);
     lcd.drawStr(x, y, buffer);
+    lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
+    sprintf(buffer, ".%1.0f", fracPart * 10);
+    lcd.drawStr(x + 18, y, buffer);
 
     for (int i = 0; i < 4; i++)
     {
         if (i == beat)
         {
-            lcd.drawBox(x + 12 * i, y + 5, 10, 5);
+            lcd.drawBox(x + 7 * i, y + 3, 6, 3);
         }
         else
         {
-            lcd.drawFrame(x + 12 * i, y + 5, 10, 5);
+            lcd.drawFrame(x + 7 * i, y + 3, 6, 3);
         }
     }
+}
+
+void drawLevel(uint8_t x, uint8_t y, uint8_t level){
+
+    for (int i = 0; i < 7; i ++){
+        lcd.drawHLine(x, y + i * 3, 2);
+        lcd.drawHLine(x + 14, y + i * 3, 2);
+    }
+
+    int barHeight = (level / 14) + 1;
+    lcd.drawBox(x + 5, y + 19 - barHeight, 6, barHeight);
 }
 
 void drawStatus(uint8_t fps)
@@ -90,19 +106,19 @@ void updateDisplay(State &state)
         switch (state.bgMode)
         {
         case 0:
-            lcd.drawStr(10, 11, "Cloud");
+            lcd.drawStr(10, 51, "Cloud");
             break;
         case 1:
-            lcd.drawStr(10, 11, "Classic");
+            lcd.drawStr(10, 51, "Classic");
             break;
         case 2:
-            lcd.drawStr(10, 11, "Wave");
+            lcd.drawStr(10, 51, "Wave");
             break;
         case 3:
-            lcd.drawStr(10, 11, "Rainbow");
+            lcd.drawStr(10, 51, "Rainbow");
             break;
         case 4:
-            lcd.drawStr(10, 11, "V.Pulse");
+            lcd.drawStr(10, 51, "V.Pulse");
             break;
         default:
             break;
@@ -118,7 +134,10 @@ void updateDisplay(State &state)
     lcd.setDrawColor(1);
     lcd.drawFrame(8, 0, 120, 65);
 
-    drawBeat(13, 16, state.bpm, state.currentBeat);
+    drawBeat(14, 16, state.bpm, state.currentBeat);
+
+    // lcd.drawVLine(45, 0, 55);
+    drawLevel(48 - 3, 4, state.visibleParam(0));
 
     drawStatus(state.fps);
 
