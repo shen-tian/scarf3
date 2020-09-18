@@ -277,6 +277,7 @@ void sparkle(long t)
 }
 
 long last_t = 0;
+long lastBeat = 0;
 
 CRGB obuff[STRAND_LENGTH];
 
@@ -323,9 +324,6 @@ void loop()
         state.decSelected();
         knobPos = newKnobPos;
     }
-
-   
-    updateDisplay(state);
 
     switch (state.bgMode)
     {
@@ -377,8 +375,20 @@ void loop()
 
     nblend(leds, obuff, STRAND_LENGTH, fxCurrentLevel);
 
+    state.recordTick(t - last_t);
+    // Serial.println(t - last_t);
+
+    int msPerBeat = 60 * 1000.0 / state.bpm;
+
+    while (t - lastBeat > msPerBeat){
+        state.nextBeat();
+        lastBeat+= msPerBeat;
+    }
+
     last_t = t;
 
+    updateDisplay(state);
+
     FastLED.show(); // display this frame
-    FastLED.delay(0);
+    // FastLED.delay(0);
 }

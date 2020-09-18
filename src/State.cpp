@@ -8,6 +8,7 @@ void State::incSelected()
         switch (selectedIdx)
         {
         case 0:
+            bpm += 0.5;
             break;
         default:
             globalParams[selectedIdx - 1] += 8;
@@ -40,6 +41,7 @@ void State::decSelected()
         switch (selectedIdx)
         {
         case 0:
+            bpm -= 0.5;
             break;
         default:
             globalParams[selectedIdx - 1] -= 8;
@@ -78,6 +80,7 @@ void State::zeroSelected()
         switch (selectedIdx)
         {
         case 0:
+            bpm = 120.0;
             break;
         default:
             globalParams[selectedIdx - 1] = 0;
@@ -100,7 +103,7 @@ void State::zeroSelected()
 void State::cycleLayer()
 {
     selectedLayer++;
-    if (selectedLayer > 1)
+    if (selectedLayer > 3)
     {
         selectedLayer = 0;
     }
@@ -116,5 +119,17 @@ uint8_t State::visibleParam(int idx)
         return patternParams[bgMode][idx];
     default:
         return 7;
+    }
+}
+
+void State::recordTick(long tickMS){
+    fps = 1000.0 / tickMS;
+    // fps = tickMS;
+}
+
+void State::nextBeat(){
+    currentBeat++;
+    if (currentBeat > 3) {
+        currentBeat = 0;
     }
 }

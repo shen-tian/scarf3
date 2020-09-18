@@ -19,9 +19,15 @@ class State
     */
     int selectedIdx = 0;
 
-    int selectedLayer = 0;
+    int selectedLayer = 1;
 
     bool dim = false;
+
+    int fps = 0;
+
+    int currentBeat = 0;
+
+    float bpm = 120.0;
 
     State(){}
 
@@ -31,6 +37,10 @@ class State
 
     void cycleParam();
     void cycleLayer();
+
+    void nextBeat();
+
+    void recordTick(long tickMS);
 
     uint8_t visibleParam(int idx);
 };
