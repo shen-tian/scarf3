@@ -93,7 +93,8 @@ byte modDist(byte x, byte y)
 void pattern_rainbow_blast(long t)
 {
     float clock = t / 1000.;
-    float per_pixel_hue_jump = 600 / STRAND_LENGTH;
+    // float per_pixel_hue_jump = 600 / STRAND_LENGTH;
+    float per_pixel_hue_jump = state.patternParams[3][0] / 8;
     float crawl_speed_factor = 100;
 
     for (int i = 0; i < STRAND_LENGTH; i++)
@@ -142,6 +143,8 @@ void pattern_classic(long t, long dt)
             x -= 1.;
 
         float hue = 255 * HUE_START + cubicwave8(x) * (HUE_END - HUE_START);
+
+        hue += state.globalParams[0] - 175;
 
         byte loc = pix;
 #if defined(REVERSED)
@@ -197,6 +200,7 @@ void patternCloud(long t, long dt)
 
         uint8_t hue = inoise8(t / 32, 2000 + i * 5);
         hue = map8(hue, 120, 220);
+        hue += state.globalParams[0] - 170; 
 
         uint8_t sat = inoise8(t / 16, i * 5);
         sat = scale8(sat, 100);
@@ -276,8 +280,10 @@ void sparkle(long t)
     // last_t = t;
 }
 
-long last_t = 0;
-long lastBeat = 0;
+unsigned long last_t = 0;
+unsigned long lastBeat = 0;
+
+unsigned long tick = 0;
 
 CRGB obuff[STRAND_LENGTH];
 
@@ -289,6 +295,33 @@ int knobPos = 0;
 void loop()
 {
     unsigned long t = millis();
+
+    state.recordTick(t - last_t);
+
+    int msPerBeat = 60 * 1000.0 / state.bpm;
+
+    // TODO: capture the frac part to limit drift. 
+    int dTick = (t - last_t) * state.bpm / 120.0;
+
+    uint8_t multiple = state.globalParams[1];
+
+    if (multiple > 32) dTick *= 2;
+    if (multiple > 64) dTick *= 2;
+    if (multiple > 96) dTick *= 2;
+    if (multiple > 128) dTick *= 2;
+    if (multiple > 160) dTick *= 2;
+    if (multiple > 192) dTick *= 2;
+    if (multiple > 224) dTick *= 2;
+    
+
+    tick += dTick;
+
+    while (t - lastBeat > msPerBeat){
+        state.nextBeat();
+        lastBeat+= msPerBeat;
+    }
+
+    
 
     debouncer.update();
     debouncer2.update();
@@ -328,29 +361,29 @@ void loop()
     switch (state.bgMode)
     {
     case 0:
-        patternCloud(t, t - last_t);
+        patternCloud(tick, dTick);
         break;
     case 1:
-        pattern_classic(t, t - last_t);
+        pattern_classic(tick, dTick);
         break;
     case 2:
-        simpleWave(t, t - last_t, state);
+        simpleWave(tick, dTick, state);
         break;
     case 3:
-        pattern_rainbow_blast(t);
+        pattern_rainbow_blast(tick);
         break;
     case 4:
-        pattern_variable_pulses(t, state);
+        pattern_variable_pulses(tick, state);
         break;
     default:
         break;
     }
 
-    sparkle(t);
+    sparkle(tick);
 
     memcpy(leds, layer0, sizeof(leds));
 
-    nblend(leds, layer1, STRAND_LENGTH, 128);
+    nblend(leds, layer1, STRAND_LENGTH, state.globalParams[2]);
 
     if (state.dim)
     {
@@ -374,16 +407,6 @@ void loop()
     }
 
     nblend(leds, obuff, STRAND_LENGTH, fxCurrentLevel);
-
-    state.recordTick(t - last_t);
-    // Serial.println(t - last_t);
-
-    int msPerBeat = 60 * 1000.0 / state.bpm;
-
-    while (t - lastBeat > msPerBeat){
-        state.nextBeat();
-        lastBeat+= msPerBeat;
-    }
 
     last_t = t;
 
