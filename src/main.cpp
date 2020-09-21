@@ -4,6 +4,8 @@
 #include <Bounce2.h>
 #include <Encoder.h>
 
+#include <USBHost_t36.h>
+
 #include "State.h"
 #include "display.h"
 
@@ -30,7 +32,26 @@ Bounce debouncer3 = Bounce();
 
 Encoder knobLeft(3, 4);
 
+USBHost myusb;
+MIDIDevice midi1(myusb);
+
 State state = State();
+
+void OnControlChange(byte channel, byte control, byte value)
+{
+    switch (control)
+    {
+    case 13:
+        state.globalParams[0] = 2 * value;
+        break;
+    case 2:
+        state.globalParams[1] = 2 * value;
+        break;
+    case 3:
+        state.globalParams[2] = 2 * value;
+        break;
+    }
+}
 
 void setup()
 {
@@ -52,6 +73,10 @@ void setup()
 
     debouncer3.attach(0);
     debouncer3.interval(20);
+
+    myusb.begin();
+
+    midi1.setHandleControlChange(OnControlChange);
 
     pinMode(7, OUTPUT);
 
@@ -199,8 +224,8 @@ void patternCloud(long t, long dt)
         //value = ease8InOutApprox(value);
 
         uint8_t hue = inoise8(t / 32, 2000 + i * 5);
-        hue = map8(hue, 120, 220);
-        hue += state.globalParams[0] - 170; 
+        hue = map8(hue, 0, 100);
+        hue += state.globalParams[0] - 50;
 
         uint8_t sat = inoise8(t / 16, i * 5);
         sat = scale8(sat, 100);
@@ -246,7 +271,7 @@ int brightness_to_value(float brightness, float min_brightness)
 void pattern_variable_pulses(long t, State &state)
 {
     float clock = t / 1000.;
-    int BASE_HUE = 175;
+    // int BASE_HUE = 175;
     float density_scale_factor = STRAND_LENGTH / 36.;
 
     float period = 30; // s
@@ -280,6 +305,42 @@ void sparkle(long t)
     // last_t = t;
 }
 
+/**
+ * Test pattern for waterfall type patter
+ * @param t current tick
+ * @param dt ticks since last call
+ * @param state overall system state
+ */
+void patternWaterall(long t, long dt, State &state)
+{
+    for (int i = STRAND_LENGTH - 1; i >= 1; i--)
+    {
+        layer0[i] = layer0[i - 1];
+    }
+
+    if (state.patternParams[0][0] == 0)
+    {
+
+        double v = inoise16(t * 65536 / 128) / 65535.0;
+
+        v = pow(v, 1 + (state.patternParams[0][1] / 32));
+        uint8_t value = v * 255;
+
+        if (value < state.patternParams[0][2])
+            value = 0;
+
+        // uint8_t sat = inoise8(t + 10000);
+        uint8_t sat = 255;
+
+        layer0[0] = CHSV(state.globalParams[0], sat, value);
+    }
+    else
+    {
+        uint8_t value = ease8InOutCubic(max(255 - (t % 500), 0));
+        layer0[0] = CHSV(state.globalParams[0], 255, value);
+    }
+}
+
 unsigned long last_t = 0;
 unsigned long lastBeat = 0;
 
@@ -300,28 +361,39 @@ void loop()
 
     int msPerBeat = 60 * 1000.0 / state.bpm;
 
-    // TODO: capture the frac part to limit drift. 
+    // TODO: capture the frac part to limit drift.
     int dTick = (t - last_t) * state.bpm / 120.0;
 
     uint8_t multiple = state.globalParams[1];
 
-    if (multiple > 32) dTick *= 2;
-    if (multiple > 64) dTick *= 2;
-    if (multiple > 96) dTick *= 2;
-    if (multiple > 128) dTick *= 2;
-    if (multiple > 160) dTick *= 2;
-    if (multiple > 192) dTick *= 2;
-    if (multiple > 224) dTick *= 2;
-    
+    if (multiple > 32)
+        dTick *= 2;
+    if (multiple > 64)
+        dTick *= 2;
+    if (multiple > 96)
+        dTick *= 2;
+    if (multiple > 128)
+        dTick *= 2;
+    if (multiple > 160)
+        dTick *= 2;
+    if (multiple > 192)
+        dTick *= 2;
+    if (multiple > 224)
+        dTick *= 2;
+
+    dTick /= 4;
 
     tick += dTick;
 
-    while (t - lastBeat > msPerBeat){
+    while (t - lastBeat > msPerBeat)
+    {
         state.nextBeat();
-        lastBeat+= msPerBeat;
+        lastBeat += msPerBeat;
     }
 
-    
+    myusb.Task();
+
+    midi1.read(1);
 
     debouncer.update();
     debouncer2.update();
@@ -361,6 +433,7 @@ void loop()
     switch (state.bgMode)
     {
     case 0:
+        // patternWaterall(tick, dTick, state);
         patternCloud(tick, dTick);
         break;
     case 1:
@@ -413,5 +486,6 @@ void loop()
     updateDisplay(state);
 
     FastLED.show(); // display this frame
-    // FastLED.delay(0);
+    if (state.globalParams[5] > 0)
+        FastLED.delay(state.globalParams[5]);
 }
