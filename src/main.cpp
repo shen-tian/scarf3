@@ -1,6 +1,4 @@
 #include <FastLED.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BNO055.h>
 #include <Bounce2.h>
 #include <Encoder.h>
 
@@ -17,9 +15,6 @@
    Whether the pattern is reversed.
 */
 #define REVERSED
-
-Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x29);
-boolean imuPresent = true;
 
 CRGB leds[STRAND_LENGTH];
 
@@ -84,12 +79,6 @@ void setup()
     FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
 
     FastLED.setBrightness(BRIGHTNESS);
-
-    if (!bno.begin())
-    {
-        Serial.println("no BNO055 detected");
-        imuPresent = false;
-    }
 }
 
 // Get a byte that cycles from 0-255, at a specified rate
@@ -186,31 +175,11 @@ void pattern_warm_white(long t)
     fade_video(leds, STRAND_LENGTH, 192);
 }
 
-float u = 1;
-
-float uprightness()
-{
-    if (!imuPresent)
-        return .5;
-
-    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-
-    float dist = euler.z() - 90;
-    if (dist < -180)
-        dist += 360;
-
-    float reading = (90 - abs(dist)) / 90;
-
-    u = .99 * u + .01 * reading;
-
-    return reading;
-}
-
 long pos = 0;
 
 void patternCloud(long t, long dt)
 {
-    float up = uprightness();
+    float up = .5; //uprightness();
 
     pos += up * dt;
 
@@ -245,7 +214,7 @@ void simpleWave(long t, long dt, State &state)
 {
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
-        uint8_t val = cubicwave8(-t / 16 + i * 4);
+        uint8_t val = cubicwave8(-t / 2 + i * 4);
         // val = dim8_video(val);
         layer0[i] = CHSV(state.globalParams[0], 255 - state.patternParams[2][1], val);
     }
@@ -338,10 +307,48 @@ void patternWaterall(long t, long dt, State &state)
     }
 }
 
-unsigned long last_t = 0;
-unsigned long lastBeat = 0;
-
 unsigned long tick = 0;
+unsigned long dTick;
+
+unsigned long t = 0;
+unsigned long u = 0;
+unsigned long uLastBeat = 0;
+unsigned long v = 0;
+
+void updateTransport()
+{
+    unsigned long nowT = millis();
+
+    float dt = (nowT - t);
+    // TODO: capture the frac part to limit drift.
+
+    float du = dt * state.bpm / 120.0;
+
+    if (state.globalParams[3] > 0)
+    {
+        du = 0;
+    }
+
+    float exponent = pow(0.5, state.globalParams[1] / 64);
+
+    t += dt;
+    u += du;
+
+    unsigned long nowV = uLastBeat + pow((u - uLastBeat) / 500.0, exponent) * 500;
+
+    while (u - uLastBeat >= 500)
+    {
+        state.nextBeat();
+        uLastBeat += 500;
+    }
+
+    state.recordTick(nowT - t);
+    t = nowT;
+
+    tick = nowV;
+    dTick = nowV - v;
+    v = nowV;
+}
 
 CRGB obuff[STRAND_LENGTH];
 
@@ -352,41 +359,7 @@ int knobPos = 0;
 
 void loop()
 {
-    unsigned long t = millis();
-
-    state.recordTick(t - last_t);
-
-    int msPerBeat = 60 * 1000.0 / state.bpm;
-
-    // TODO: capture the frac part to limit drift.
-    int dTick = (t - last_t) * state.bpm / 120.0;
-
-    uint8_t multiple = state.globalParams[1];
-
-    if (multiple > 32)
-        dTick *= 2;
-    if (multiple > 64)
-        dTick *= 2;
-    if (multiple > 96)
-        dTick *= 2;
-    if (multiple > 128)
-        dTick *= 2;
-    if (multiple > 160)
-        dTick *= 2;
-    if (multiple > 192)
-        dTick *= 2;
-    if (multiple > 224)
-        dTick *= 2;
-
-    dTick /= 4;
-
-    tick += dTick;
-
-    while (t - lastBeat > msPerBeat)
-    {
-        state.nextBeat();
-        lastBeat += msPerBeat;
-    }
+    updateTransport();
 
     myusb.Task();
 
@@ -430,8 +403,8 @@ void loop()
     switch (state.bgMode)
     {
     case 0:
-        // patternWaterall(tick, dTick, state);
-        patternCloud(tick, dTick);
+        patternWaterall(tick, dTick, state);
+        //patternCloud(tick, dTick);
         break;
     case 1:
         pattern_classic(tick, dTick);
@@ -477,8 +450,6 @@ void loop()
     }
 
     nblend(leds, obuff, STRAND_LENGTH, fxCurrentLevel);
-
-    last_t = t;
 
     updateDisplay(state);
 
