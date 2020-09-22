@@ -293,16 +293,13 @@ void pattern_variable_pulses(long t, State &state)
     }
 }
 
-void sparkle(long t)
+void sparkle(long t, long dt)
 {
     int spot = random16(20 * (255 - state.globalParams[1]));
     if (spot < STRAND_LENGTH)
         layer1[spot] = CHSV(0, 0, 255);
 
-    fadeUsingColor(layer1, STRAND_LENGTH, CRGB(230, 239, 245));
-
-    // leds[t - last_t] = CRGB(255,0,0);
-    // last_t = t;
+    fadeUsingColor(layer1, STRAND_LENGTH, CHSV(state.globalParams[0] - 32, 5, 255 - dt / 10));
 }
 
 /**
@@ -452,7 +449,7 @@ void loop()
         break;
     }
 
-    sparkle(tick);
+    sparkle(tick, dTick);
 
     memcpy(leds, layer0, sizeof(leds));
 
