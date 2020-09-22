@@ -45,6 +45,8 @@ void OnControlChange(byte channel, byte control, byte value)
     case 3:
         state.globalParams[2] = 2 * value;
         break;
+    case 63:
+        state.globalParams[3] += 128;
     }
 }
 
@@ -311,29 +313,34 @@ unsigned long tick = 0;
 unsigned long dTick;
 
 unsigned long t = 0;
-unsigned long u = 0;
-unsigned long uLastBeat = 0;
-unsigned long v = 0;
+unsigned long u = 3600000;
+unsigned long uLastBeat = u;
+unsigned long v = v;
 
 void updateTransport()
 {
     unsigned long nowT = millis();
 
     float dt = (nowT - t);
-    // TODO: capture the frac part to limit drift.
+    // TODO: figure out how this does/doesn't drift out of sync
 
     float du = dt * state.bpm / 120.0;
 
     if (state.globalParams[3] > 0)
     {
-        du = 0;
+        du = -du;
     }
 
-    float exponent = pow(0.5, state.globalParams[1] / 64);
-
-    t += dt;
     u += du;
 
+    // ensure uLastBeat is before u, for purposes of reversing
+    while (uLastBeat > u){
+        uLastBeat -= 500;
+        // state.prevBeat ?
+    }
+
+    // Stutter
+    float exponent = pow(0.5, state.globalParams[1] / 64);
     unsigned long nowV = uLastBeat + pow((u - uLastBeat) / 500.0, exponent) * 500;
 
     while (u - uLastBeat >= 500)
@@ -342,12 +349,13 @@ void updateTransport()
         uLastBeat += 500;
     }
 
+    // for fps cal. Not sure how NB?
     state.recordTick(nowT - t);
-    t = nowT;
-
+    
     tick = nowV;
     dTick = nowV - v;
     v = nowV;
+    t = nowT;
 }
 
 CRGB obuff[STRAND_LENGTH];
