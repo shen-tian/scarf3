@@ -13,6 +13,7 @@
 #include "patterns/Pattern.h"
 #include "patterns/Cloud.h"
 #include "patterns/Scarf.h"
+#include "patterns/VariablePulse.h"
 
 #define BRIGHTNESS 255
 
@@ -61,8 +62,9 @@ void setup()
 {
     patterns[0] = new Cloud(0);
     patterns[1] = new Scarf(1);
+    patterns[2] = new VariablePulse(2);
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 3; i++)
     {
         state.registerPattern(i, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
     }
@@ -119,48 +121,6 @@ void simpleWave(long t, long dt, State &state)
         uint8_t val = cubicwave8(-t / 2 + i * 4);
         // val = dim8_video(val);
         layer0[i] = CHSV(state.globalParams[0], 255 - state.patternParams[2][1], val);
-    }
-}
-
-// return a cyclical (sine wave) value between min and max
-float xcycle(float t, float period, float min, float max)
-{
-    return .5 * (min + max) - .5 * (max - min) * cos(t / period * (2 * PI));
-}
-
-// blend linearly between a and b, fraction=0 returns a, fraction=1 returns b
-float xblend(float a, float b, float fraction)
-{
-    return (1 - fraction) * a + fraction * b;
-}
-
-int brightness_to_value(float brightness, float min_brightness)
-{
-    return xblend(min_brightness, 1., brightness) * 128;
-}
-
-void pattern_variable_pulses(long t, State &state)
-{
-    float clock = t / 1000.;
-    // int BASE_HUE = 175;
-    float density_scale_factor = STRAND_LENGTH / 36.;
-
-    float period = 30; // s
-    float peakedness = 3;
-    float min_pulse_width = 5. * density_scale_factor;
-    float max_pulse_width = STRAND_LENGTH * 2.5;
-    float crawl_speed_factor = 1; // around 1 is the sweet spot; changing this too much seems to look much worse
-    float min_brightness = .05;
-
-    // cycle in the inverse space to balance short vs. long pulses better
-    float pulse_width = 1. / xcycle(clock, period, 1. / min_pulse_width, 1. / max_pulse_width);
-    float crawl_offset = crawl_speed_factor * clock;
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        float brightness = xcycle(STRAND_LENGTH - i + crawl_offset * pulse_width, pulse_width, 0, 1);
-        brightness = pow(brightness, peakedness);
-        int value = brightness_to_value(brightness, min_brightness);
-        layer0[i] = CHSV(state.globalParams[0], 255, value);
     }
 }
 
@@ -311,18 +271,15 @@ void loop()
 
     switch (state.bgMode)
     {
-    case 0 ... 1:
+    case 0 ... 2:
         //patternWaterall(tick, dTick, state);
         patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
         break;
-    case 2:
+    case 4:
         simpleWave(tick, dTick, state);
         break;
     case 3:
         pattern_rainbow_blast(tick);
-        break;
-    case 4:
-        pattern_variable_pulses(tick, state);
         break;
     default:
         break;

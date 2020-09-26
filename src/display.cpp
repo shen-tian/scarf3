@@ -145,11 +145,8 @@ void updateDisplay(State &state)
     {
         switch (state.bgMode)
         {
-        case 0 ... 1:
+        case 0 ... 2:
             lcd.drawStr(10, 51, state.getPatternLabel(state.bgMode));
-            break;
-        case 2:
-            lcd.drawStr(10, 51, "Wave");
             break;
         case 3:
             lcd.drawStr(10, 51, "Rainbow");
