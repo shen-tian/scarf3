@@ -10,6 +10,9 @@
 
 #include "hal/default.h"
 
+#include "patterns/Pattern.h"
+#include "patterns/Cloud.h"
+
 #define BRIGHTNESS 255
 
 /**
@@ -33,6 +36,8 @@ MIDIDevice midi1(myusb);
 
 State state = State();
 
+Pattern **patterns = new Pattern*[5];
+
 void OnControlChange(byte channel, byte control, byte value)
 {
     switch (control)
@@ -53,6 +58,8 @@ void OnControlChange(byte channel, byte control, byte value)
 
 void setup()
 {
+    patterns[0] = new Cloud();
+
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
 
@@ -176,41 +183,6 @@ void pattern_warm_white(long t)
 {
     fill_solid(leds, STRAND_LENGTH, CRGB(255, 147, 41));
     fade_video(leds, STRAND_LENGTH, 192);
-}
-
-long pos = 0;
-
-void patternCloud(long t, long dt)
-{
-    float up = .5; //uprightness();
-
-    pos += up * dt;
-
-    CRGB buff[STRAND_LENGTH];
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        uint8_t value = inoise8(t / 8, (1000 + i - pos / 32) * 10);
-        value = qsub8(value, 64);
-        if (value < 32)
-            value = 0;
-        //value = ease8InOutApprox(value);
-
-        uint8_t hue = inoise8(t / 32, 2000 + i * 5);
-        hue = map8(hue, 0, 100);
-        hue += state.globalParams[0] - 50;
-
-        uint8_t sat = inoise8(t / 16, i * 5);
-        sat = scale8(sat, 100);
-        sat = qadd8(sat, 128);
-
-        if (i % 1 == 0)
-            buff[i] = CHSV(hue, sat, value + 32);
-        else
-            buff[i] = CRGB::Black;
-    }
-    nblend(layer0, buff, STRAND_LENGTH, 255);
-
-    //fade_video(layer0, STRAND_LENGTH, 128);
 }
 
 void simpleWave(long t, long dt, State &state)
@@ -412,9 +384,9 @@ void loop()
 
     switch (state.bgMode)
     {
-    case 0:
+    case 0 ... 0:
         //patternWaterall(tick, dTick, state);
-        patternCloud(tick, dTick);
+        patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
         break;
     case 1:
         pattern_classic(tick, dTick);
