@@ -133,3 +133,11 @@ void State::nextBeat(){
         currentBeat = 0;
     }
 }
+
+void State::registerPattern(int idx, const char *label){
+    patternLabels[idx] = label;
+}
+
+const char* State::getPatternLabel(int idx){
+    return patternLabels[idx];
+}

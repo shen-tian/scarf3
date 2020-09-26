@@ -12,6 +12,7 @@
 
 #include "patterns/Pattern.h"
 #include "patterns/Cloud.h"
+#include "patterns/Scarf.h"
 
 #define BRIGHTNESS 255
 
@@ -36,7 +37,7 @@ MIDIDevice midi1(myusb);
 
 State state = State();
 
-Pattern **patterns = new Pattern*[5];
+Pattern **patterns = new Pattern *[5];
 
 void OnControlChange(byte channel, byte control, byte value)
 {
@@ -58,7 +59,13 @@ void OnControlChange(byte channel, byte control, byte value)
 
 void setup()
 {
-    patterns[0] = new Cloud();
+    patterns[0] = new Cloud(0);
+    patterns[1] = new Scarf(1);
+
+    for (int i = 0; i < 2; i++)
+    {
+        state.registerPattern(i, patterns[i]->getLabel());
+    }
 
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
@@ -91,28 +98,6 @@ void setup()
     FastLED.setBrightness(BRIGHTNESS);
 }
 
-// Get a byte that cycles from 0-255, at a specified rate
-// typically, assign mil using mills();
-// rates, approximately (assuming 256ms in a second :P)
-// 8: 4hz
-// 7: 2hz
-// 6: 1hz
-// 5: 1/2hz
-// 4: 1/4hz
-// 3: 1/8hz
-// 2: 1/16hz
-// 1: 1/32hz
-byte getClock(unsigned long mil, byte rate)
-{
-    return mil >> (8 - rate) % 256;
-}
-
-// messy, but some sort of least-of-3 distances, allowing wraping.
-byte modDist(byte x, byte y)
-{
-    return min(min(abs(x - y), abs(x - y + 256)), abs(x - y - 256));
-}
-
 // partymode ala nazgul
 void pattern_rainbow_blast(long t)
 {
@@ -125,64 +110,6 @@ void pattern_rainbow_blast(long t)
     {
         layer0[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
     }
-}
-
-/**
-    Pattern definition. The program cycles through a range on the wheel, and
-    back again. This defines the boundaries. Note that wraparound for the full
-    rainbow is not enabled. Would take special case code.
-*/
-
-#define HUE_START .5
-#define HUE_END .75
-#define SATURATION .8
-
-void pattern_classic(long t, long dt)
-{
-    byte color = getClock(t, 2);
-    byte pulse = inoise8(t / 4.) * .5;
-    byte drift = getClock(t, 3);
-    pulse += drift;
-
-    // pulse = getClock(t, 4) + 4 * sin((t * PI)/255.0);
-
-    if (pulse > 255)
-        pulse -= 255;
-
-    for (byte pix = 0; pix < STRAND_LENGTH; pix++)
-    {
-        // location of the pixel on a 0-RENDER_RANGE scale.
-        byte dist = pix * 255 / STRAND_LENGTH;
-
-        byte delta = modDist(dist, pulse);
-        // linear ramp up of brightness, for those within 1/8th of the reference point
-        float value = max(255 - 6 * delta, 64);
-
-        // hue selection. Mainly driving by c, but with some small shifting along
-        // the length of the strand.
-
-        // sweep of a subset of the spectrum.
-        float x = color / 255. + pix * 128. / STRAND_LENGTH;
-        if (x >= 1)
-            x -= 1.;
-
-        float hue = 255 * HUE_START + cubicwave8(x) * (HUE_END - HUE_START);
-
-        hue += state.globalParams[0] - 175;
-
-        byte loc = pix;
-#if defined(REVERSED)
-        loc = STRAND_LENGTH - 1 - pix;
-#endif
-
-        layer0[loc] = CHSV(hue, 255 * SATURATION, value);
-    }
-}
-
-void pattern_warm_white(long t)
-{
-    fill_solid(leds, STRAND_LENGTH, CRGB(255, 147, 41));
-    fade_video(leds, STRAND_LENGTH, 192);
 }
 
 void simpleWave(long t, long dt, State &state)
@@ -384,12 +311,9 @@ void loop()
 
     switch (state.bgMode)
     {
-    case 0 ... 0:
+    case 0 ... 1:
         //patternWaterall(tick, dTick, state);
         patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
-        break;
-    case 1:
-        pattern_classic(tick, dTick);
         break;
     case 2:
         simpleWave(tick, dTick, state);

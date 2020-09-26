@@ -3,10 +3,9 @@
 
 #include <stdint.h>
 
-class State 
+class State
 {
-    public:
-
+public:
     int bgMode = 0;
 
     uint8_t patternParams[5][6];
@@ -29,7 +28,9 @@ class State
 
     float bpm = 120.0;
 
-    State(){}
+    State() {}
+
+    void registerPattern(int idx, const char *label);
 
     void incSelected();
     void decSelected();
@@ -43,6 +44,11 @@ class State
     void recordTick(long tickMS);
 
     uint8_t visibleParam(int idx);
+
+    const char* getPatternLabel(int idx);
+
+private:
+    const char *patternLabels[5];
 };
 
 #endif

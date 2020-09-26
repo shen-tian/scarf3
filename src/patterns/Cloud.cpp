@@ -1,7 +1,8 @@
 #include "Cloud.h"
 
-Cloud::Cloud(){
+Cloud::Cloud(int idx){
     pos = 0;
+    paramIndex = idx;
 }
 
 void Cloud::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
@@ -31,5 +32,5 @@ void Cloud::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 }
 
 const char* Cloud::getLabel(){
-    return "cloud";
+    return "FC Cloud";
 }
