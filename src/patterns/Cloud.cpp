@@ -3,6 +3,14 @@
 Cloud::Cloud(int idx){
     pos = 0;
     paramIndex = idx;
+    label = "Cloud";
+    pMetadata = new paramMetadata[6];
+    pMetadata[0] = {NORMAL, 128};
+    pMetadata[1] = {OCTAVE, 96};
+    pMetadata[2] = {NONE, 0};
+    pMetadata[3] = {NONE, 0};
+    pMetadata[4] = {NONE, 0};
+    pMetadata[5] = {NONE, 0};
 }
 
 void Cloud::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
@@ -32,19 +40,4 @@ void Cloud::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 
         leds[i] = CHSV(hue, sat, value + 32);
     }
-}
-
-const char* Cloud::getLabel(){
-    return "FC Cloud";
-}
-
-paramMetadata *Cloud::getParamMetaData(){
-    paramMetadata *params = new paramMetadata[6];
-    params[0] = {NORMAL, 128};
-    params[1] = {OCTAVE, 128};
-    params[2] = {NONE, 0};
-    params[3] = {NONE, 0};
-    params[4] = {NONE, 0};
-    params[5] = {NONE, 0};
-    return params;
 }

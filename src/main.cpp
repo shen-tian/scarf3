@@ -101,7 +101,7 @@ void setup()
 // partymode ala nazgul
 void pattern_rainbow_blast(long t)
 {
-    float clock = t / 1000.;
+    float clock = t / 1000. * state.visibleOctave(1);
     // float per_pixel_hue_jump = 600 / STRAND_LENGTH;
     float per_pixel_hue_jump = state.patternParams[3][0] / 8;
     float crawl_speed_factor = 100;

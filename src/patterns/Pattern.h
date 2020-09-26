@@ -9,10 +9,13 @@
 
 class Pattern
 {
+protected:
+    const char* label;
+    paramMetadata *pMetadata;
 public:
     virtual void fill(CRGB *leds, long numLEDs, long t, long dt, State &state) = 0;
-    virtual const char *getLabel() = 0;
-    virtual paramMetadata *getParamMetaData() = 0;
+    const char *getLabel();
+    paramMetadata *getParamMetaData();
 };
 
 #endif

@@ -28,6 +28,15 @@ Scarf::Scarf(int idx)
 {
     pos = 0;
     paramIndex = idx;
+
+    label = "Scarf";
+    pMetadata = new paramMetadata[6];
+    pMetadata[0] = {NORMAL, 128};
+    pMetadata[1] = {OCTAVE, 128};
+    pMetadata[2] = {NONE, 0};
+    pMetadata[3] = {NONE, 0};
+    pMetadata[4] = {NONE, 0};
+    pMetadata[5] = {NONE, 0};
 }
 
 void Scarf::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
@@ -73,20 +82,4 @@ void Scarf::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 
         leds[loc] = CHSV(hue, 255 * SATURATION, value);
     }
-}
-
-const char *Scarf::getLabel()
-{
-    return "Scarf";
-}
-
-paramMetadata *Scarf::getParamMetaData(){
-    paramMetadata *params = new paramMetadata[6];
-    params[0] = {NORMAL, 128};
-    params[1] = {OCTAVE, 128};
-    params[2] = {NONE, 0};
-    params[3] = {NONE, 0};
-    params[4] = {NONE, 0};
-    params[5] = {NONE, 0};
-    return params;
 }
