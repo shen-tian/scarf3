@@ -9,14 +9,24 @@ void initDisplay()
     lcd.begin();
 }
 
-void drawParam(uint8_t x, uint8_t y, uint8_t value, bool selected)
+void drawParam(uint8_t x, uint8_t y, uint8_t value, paramType type, bool selected)
 {
-
     lcd.setDrawColor(selected ? 1 : 0);
     lcd.drawBox(x, y, 15, 22);
 
     lcd.setDrawColor(selected ? 0 : 1);
-    lcd.drawXBM(x + 1, y + 1, 13, 13, dialXBM[value / 13]);
+    switch (type)
+    {
+    case NORMAL:
+    case CIRCULAR:
+        lcd.drawXBM(x + 1, y + 1, 13, 13, dialXBM[value / 13]);
+        break;
+    case OCTAVE:
+        lcd.drawStr(x + 1, y + 10, "X2");
+        break;
+    case NONE:
+        break;
+    }
 
     char buffer[3];
     sprintf(buffer, "%03d", value);
@@ -39,7 +49,7 @@ void drawBeat(uint8_t x, uint8_t y, float bpm, int beat)
 {
     char buffer[5];
     float intPart, fracPart;
-    fracPart = modff(bpm , &intPart);
+    fracPart = modff(bpm, &intPart);
     sprintf(buffer, "%3.0f", intPart);
     lcd.setFont(u8g2_font_t0_11b_mn);
     lcd.drawStr(x, y, buffer);
@@ -60,9 +70,11 @@ void drawBeat(uint8_t x, uint8_t y, float bpm, int beat)
     }
 }
 
-void drawLevel(uint8_t x, uint8_t y, uint8_t level){
+void drawLevel(uint8_t x, uint8_t y, uint8_t level)
+{
 
-    for (int i = 0; i < 7; i ++){
+    for (int i = 0; i < 7; i++)
+    {
         lcd.drawHLine(x, y + i * 3, 2);
         lcd.drawHLine(x + 14, y + i * 3, 2);
     }
@@ -142,7 +154,7 @@ void updateDisplay(State &state)
     {
         uint8_t x = 128 - (16 * 3) + (i % 3) * 16;
         uint8_t y = 1 + 22 * (i / 3);
-        drawParam(x, y, state.visibleParam(i), (state.selectedIdx == i + 1));
+        drawParam(x, y, state.visibleParam(i), state.visibleParamType(i), (state.selectedIdx == i + 1));
     }
 
     //lcd.drawGlyph(0, 63, 0x0040 + 5);

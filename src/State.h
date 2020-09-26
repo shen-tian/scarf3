@@ -3,6 +3,18 @@
 
 #include <stdint.h>
 
+enum paramType {NONE, NORMAL, CIRCULAR, OCTAVE };
+
+struct paramMetadata{
+    paramType type;
+    uint8_t defaultValue;
+};
+
+struct patternMetadata{
+    const char* label;
+    paramMetadata *params;
+};
+
 class State
 {
 public:
@@ -30,7 +42,7 @@ public:
 
     State() {}
 
-    void registerPattern(int idx, const char *label);
+    void registerPattern(int idx, const char *label, paramMetadata *params);
 
     void incSelected();
     void decSelected();
@@ -44,11 +56,12 @@ public:
     void recordTick(long tickMS);
 
     uint8_t visibleParam(int idx);
+    paramType visibleParamType(int idx);
 
     const char* getPatternLabel(int idx);
 
 private:
-    const char *patternLabels[5];
+    patternMetadata pMeta[5];
 };
 
 #endif

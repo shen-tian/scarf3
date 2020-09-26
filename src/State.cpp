@@ -122,6 +122,19 @@ uint8_t State::visibleParam(int idx)
     }
 }
 
+paramType State::visibleParamType(int idx)
+{
+    switch (selectedLayer)
+    {
+    case 0:
+        return NORMAL;
+    case 1:
+        return pMeta[bgMode].params[idx].type;
+    default:
+        return NONE;
+    }
+}
+
 void State::recordTick(long tickMS){
     fps = 1000.0 / tickMS;
     // fps = tickMS;
@@ -134,10 +147,17 @@ void State::nextBeat(){
     }
 }
 
-void State::registerPattern(int idx, const char *label){
-    patternLabels[idx] = label;
+void State::registerPattern(int idx, const char *label, paramMetadata *params){
+    pMeta[idx].label = label;
+    pMeta[idx].params = params;
+
+    for (int i = 0; i < 6; i++){
+        if (params[i].type != NONE){
+            patternParams[idx][i] = params[i].defaultValue;
+        }
+    }
 }
 
 const char* State::getPatternLabel(int idx){
-    return patternLabels[idx];
+    return pMeta[idx].label;
 }

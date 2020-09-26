@@ -64,7 +64,7 @@ void setup()
 
     for (int i = 0; i < 2; i++)
     {
-        state.registerPattern(i, patterns[i]->getLabel());
+        state.registerPattern(i, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
     }
 
     Serial.begin(9600);

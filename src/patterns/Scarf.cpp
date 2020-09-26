@@ -76,3 +76,14 @@ const char *Scarf::getLabel()
 {
     return "Scarf";
 }
+
+paramMetadata *Scarf::getParamMetaData(){
+    paramMetadata *params = new paramMetadata[6];
+    params[0] = {NORMAL, 128};
+    params[1] = {OCTAVE, 128};
+    params[2] = {NONE, 0};
+    params[3] = {NONE, 0};
+    params[4] = {NONE, 0};
+    params[5] = {NONE, 0};
+    return params;
+}

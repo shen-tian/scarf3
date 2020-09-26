@@ -72,5 +72,3 @@ const uint8_t dialXBM[20][26] = {{
 void initDisplay();
 
 void updateDisplay(State &state);
-
-void drawParam(uint8_t x, uint8_t y, uint8_t value, bool selected);
