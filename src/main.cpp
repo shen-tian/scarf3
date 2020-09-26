@@ -16,6 +16,7 @@
 #include "patterns/VariablePulse.h"
 #include "patterns/SimpleWave.h"
 #include "patterns/RainbowBlast.h"
+#include "patterns/Sparkle.h"
 
 #define BRIGHTNESS 255
 
@@ -41,6 +42,7 @@ MIDIDevice midi1(myusb);
 State state = State();
 
 Pattern **patterns = new Pattern *[5];
+Pattern **overlays = new Pattern *[1];
 
 void OnControlChange(byte channel, byte control, byte value)
 {
@@ -73,6 +75,8 @@ void setup()
         state.registerPattern(i, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
     }
 
+    overlays[0] = new Sparkle(0);
+
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
 
@@ -102,15 +106,6 @@ void setup()
     FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
 
     FastLED.setBrightness(BRIGHTNESS);
-}
-
-void sparkle(long t, long dt)
-{
-    int spot = random16(20 * (255 - state.globalParams[1]));
-    if (spot < STRAND_LENGTH)
-        layer1[spot] = CHSV(0, 0, 255);
-
-    fadeUsingColor(layer1, STRAND_LENGTH, CHSV(state.globalParams[0] - 32, 5, 255 - dt / 10));
 }
 
 /**
@@ -257,7 +252,7 @@ void loop()
         break;
     }
 
-    sparkle(tick, dTick);
+    overlays[0]->fill(layer1, STRAND_LENGTH, tick, dTick, state);
 
     memcpy(leds, layer0, sizeof(leds));
 
