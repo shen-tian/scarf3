@@ -14,6 +14,7 @@
 #include "patterns/Cloud.h"
 #include "patterns/Scarf.h"
 #include "patterns/VariablePulse.h"
+#include "patterns/SimpleWave.h"
 
 #define BRIGHTNESS 255
 
@@ -63,8 +64,9 @@ void setup()
     patterns[0] = new Cloud(0);
     patterns[1] = new Scarf(1);
     patterns[2] = new VariablePulse(2);
+    patterns[3] = new SimpleWave(3);
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
         state.registerPattern(i, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
     }
@@ -111,16 +113,6 @@ void pattern_rainbow_blast(long t)
     for (int i = 0; i < STRAND_LENGTH; i++)
     {
         layer0[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
-    }
-}
-
-void simpleWave(long t, long dt, State &state)
-{
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        uint8_t val = cubicwave8(-t / 2 + i * 4);
-        // val = dim8_video(val);
-        layer0[i] = CHSV(state.globalParams[0], 255 - state.patternParams[2][1], val);
     }
 }
 
@@ -271,14 +263,11 @@ void loop()
 
     switch (state.bgMode)
     {
-    case 0 ... 2:
+    case 0 ... 3:
         //patternWaterall(tick, dTick, state);
         patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
         break;
     case 4:
-        simpleWave(tick, dTick, state);
-        break;
-    case 3:
         pattern_rainbow_blast(tick);
         break;
     default:
