@@ -15,6 +15,7 @@
 #include "patterns/Scarf.h"
 #include "patterns/VariablePulse.h"
 #include "patterns/SimpleWave.h"
+#include "patterns/RainbowBlast.h"
 
 #define BRIGHTNESS 255
 
@@ -65,8 +66,9 @@ void setup()
     patterns[1] = new Scarf(1);
     patterns[2] = new VariablePulse(2);
     patterns[3] = new SimpleWave(3);
+    patterns[4] = new RainbowBlast(4);
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 5; i++)
     {
         state.registerPattern(i, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
     }
@@ -100,20 +102,6 @@ void setup()
     FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
 
     FastLED.setBrightness(BRIGHTNESS);
-}
-
-// partymode ala nazgul
-void pattern_rainbow_blast(long t)
-{
-    float clock = t / 1000. * state.visibleOctave(1);
-    // float per_pixel_hue_jump = 600 / STRAND_LENGTH;
-    float per_pixel_hue_jump = state.patternParams[3][0] / 8;
-    float crawl_speed_factor = 100;
-
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        layer0[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
-    }
 }
 
 void sparkle(long t, long dt)
@@ -263,14 +251,9 @@ void loop()
 
     switch (state.bgMode)
     {
-    case 0 ... 3:
+    case 0 ... 4:
         //patternWaterall(tick, dTick, state);
         patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
-        break;
-    case 4:
-        pattern_rainbow_blast(tick);
-        break;
-    default:
         break;
     }
 
