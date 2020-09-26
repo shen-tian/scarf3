@@ -20,8 +20,9 @@ void RainbowBlast::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
     float per_pixel_hue_jump = state.patternParams[paramIndex][2] / 8;
     float crawl_speed_factor = 100;
 
-    for (int i = 0; i < STRAND_LENGTH; i++)
+    for (int i = 0; i < numLEDs; i++)
     {
-        leds[STRAND_LENGTH - 1 - i] = CHSV(per_pixel_hue_jump * i + crawl_speed_factor * clock, 255, 255);
+        uint8_t hueIndex = per_pixel_hue_jump * i + crawl_speed_factor * clock;
+        leds[numLEDs - 1 - i] = ColorFromPalette(PartyColors_p, hueIndex, state.patternParams[paramIndex][0]);
     }
 }
