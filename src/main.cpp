@@ -6,6 +6,7 @@
 
 #include "State.h"
 #include "display.h"
+#include "palettes.h"
 
 #include "hal/default.h"
 
@@ -334,7 +335,8 @@ void updateTransport()
     u += du;
 
     // ensure uLastBeat is before u, for purposes of reversing
-    while (uLastBeat > u){
+    while (uLastBeat > u)
+    {
         uLastBeat -= 500;
         // state.prevBeat ?
     }
@@ -351,7 +353,7 @@ void updateTransport()
 
     // for fps cal. Not sure how NB?
     state.recordTick(nowT - t);
-    
+
     tick = nowV;
     dTick = nowV - v;
     v = nowV;
@@ -411,8 +413,8 @@ void loop()
     switch (state.bgMode)
     {
     case 0:
-        patternWaterall(tick, dTick, state);
-        //patternCloud(tick, dTick);
+        //patternWaterall(tick, dTick, state);
+        patternCloud(tick, dTick);
         break;
     case 1:
         pattern_classic(tick, dTick);
