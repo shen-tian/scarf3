@@ -56,6 +56,7 @@ public:
     void recordTick(long tickMS);
 
     uint8_t visibleParam(int idx);
+    float visibleOctave(int idx);
     paramType visibleParamType(int idx);
 
     const char* getPatternLabel(int idx);

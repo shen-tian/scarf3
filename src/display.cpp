@@ -15,6 +15,8 @@ void drawParam(uint8_t x, uint8_t y, uint8_t value, paramType type, bool selecte
     lcd.drawBox(x, y, 15, 22);
 
     lcd.setDrawColor(selected ? 0 : 1);
+    lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
+
     switch (type)
     {
     case NORMAL:
@@ -22,7 +24,33 @@ void drawParam(uint8_t x, uint8_t y, uint8_t value, paramType type, bool selecte
         lcd.drawXBM(x + 1, y + 1, 13, 13, dialXBM[value / 13]);
         break;
     case OCTAVE:
-        lcd.drawStr(x + 1, y + 10, "X2");
+        switch (value)
+        {
+        case 0 ... 31:
+            lcd.drawStr(x + 1, y + 10, "1/8");
+            break;
+        case 32 ... 63:
+            lcd.drawStr(x + 1, y + 10, "1/4");
+            break;
+        case 64 ... 95:
+            lcd.drawStr(x + 1, y + 10, "1/2");
+            break;
+        case 96 ... 127:
+            lcd.drawStr(x + 1, y + 10, " 1x");
+            break;
+        case 128 ... 159:
+            lcd.drawStr(x + 1, y + 10, " 2x");
+            break;
+        case 160 ... 191:
+            lcd.drawStr(x + 1, y + 10, " 4x");
+            break;
+        case 192 ... 223:
+            lcd.drawStr(x + 1, y + 10, " 8x");
+            break;
+        case 224 ... 255:
+            lcd.drawStr(x + 1, y + 10, "16x");
+            break;
+        }
         break;
     case NONE:
         break;

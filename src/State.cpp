@@ -122,6 +122,37 @@ uint8_t State::visibleParam(int idx)
     }
 }
 
+float State::visibleOctave(int idx)
+{
+    switch (selectedLayer)
+    {
+    case 0:
+        return globalParams[idx];
+    case 1:
+        switch (patternParams[bgMode][idx])
+        {
+        case 0 ... 31:
+            return 1 / 8.0;
+        case 32 ... 63:
+            return 1 / 4.0;
+        case 64 ... 95:
+            return 1 / 2.0;
+        case 96 ... 127:
+            return 1;
+        case 128 ... 159:
+            return 2;
+        case 160 ... 191:
+            return 4;
+        case 192 ... 223:
+            return 8;
+        case 224 ... 255:
+            return 16;
+        }
+    default:
+        return 7;
+    }
+}
+
 paramType State::visibleParamType(int idx)
 {
     switch (selectedLayer)
@@ -135,29 +166,36 @@ paramType State::visibleParamType(int idx)
     }
 }
 
-void State::recordTick(long tickMS){
+void State::recordTick(long tickMS)
+{
     fps = 1000.0 / tickMS;
     // fps = tickMS;
 }
 
-void State::nextBeat(){
+void State::nextBeat()
+{
     currentBeat++;
-    if (currentBeat > 3) {
+    if (currentBeat > 3)
+    {
         currentBeat = 0;
     }
 }
 
-void State::registerPattern(int idx, const char *label, paramMetadata *params){
+void State::registerPattern(int idx, const char *label, paramMetadata *params)
+{
     pMeta[idx].label = label;
     pMeta[idx].params = params;
 
-    for (int i = 0; i < 6; i++){
-        if (params[i].type != NONE){
+    for (int i = 0; i < 6; i++)
+    {
+        if (params[i].type != NONE)
+        {
             patternParams[idx][i] = params[i].defaultValue;
         }
     }
 }
 
-const char* State::getPatternLabel(int idx){
+const char *State::getPatternLabel(int idx)
+{
     return pMeta[idx].label;
 }
