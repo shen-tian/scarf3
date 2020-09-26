@@ -18,13 +18,6 @@
 #include "patterns/RainbowBlast.h"
 #include "patterns/Sparkle.h"
 
-#define BRIGHTNESS 255
-
-/**
-   Whether the pattern is reversed.
-*/
-#define REVERSED
-
 CRGB leds[STRAND_LENGTH];
 
 CRGB layer0[STRAND_LENGTH];
@@ -35,6 +28,7 @@ Bounce debouncer2 = Bounce();
 Bounce debouncer3 = Bounce();
 
 Encoder knobLeft(3, 4);
+int knobPos = 0;
 
 USBHost myusb;
 MIDIDevice midi1(myusb);
@@ -82,8 +76,7 @@ void setup()
 
     initDisplay();
 
-#if defined(BUTTON_PIN)
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    pinMode(1, INPUT_PULLUP);
     pinMode(2, INPUT_PULLUP);
 
     debouncer.attach(1);
@@ -91,7 +84,6 @@ void setup()
 
     debouncer2.attach(2);
     debouncer2.interval(20);
-#endif
 
     debouncer3.attach(0);
     debouncer3.interval(20);
@@ -100,48 +92,10 @@ void setup()
 
     midi1.setHandleControlChange(OnControlChange);
 
-    pinMode(7, OUTPUT);
+    FastLED.addLeds<APA102, 11, 13, BGR>(leds, STRAND_LENGTH);
+    FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH);
 
-    FastLED.addLeds<APA102, 11, 13, BGR>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
-    FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH).setCorrection(TypicalLEDStrip);
-
-    FastLED.setBrightness(BRIGHTNESS);
-}
-
-/**
- * Test pattern for waterfall type patter
- * @param t current tick
- * @param dt ticks since last call
- * @param state overall system state
- */
-void patternWaterall(long t, long dt, State &state)
-{
-    for (int i = STRAND_LENGTH - 1; i >= 1; i--)
-    {
-        layer0[i] = layer0[i - 1];
-    }
-
-    if (state.patternParams[0][0] == 0)
-    {
-
-        double v = inoise16(t * 65536 / 128) / 65535.0;
-
-        v = pow(v, 1 + (state.patternParams[0][1] / 32));
-        uint8_t value = v * 255;
-
-        if (value < state.patternParams[0][2])
-            value = 0;
-
-        // uint8_t sat = inoise8(t + 10000);
-        uint8_t sat = 255;
-
-        layer0[0] = CHSV(state.globalParams[0], sat, value);
-    }
-    else
-    {
-        uint8_t value = ease8InOutCubic(max(255 - (t % 500), 0));
-        layer0[0] = CHSV(state.globalParams[0], 255, value);
-    }
+    FastLED.setBrightness(255);
 }
 
 unsigned long tick = 0;
@@ -194,13 +148,6 @@ void updateTransport()
     t = nowT;
 }
 
-CRGB obuff[STRAND_LENGTH];
-
-u_int8_t fxTargetLevel = 0;
-u_int8_t fxCurrentLevel = 0;
-
-int knobPos = 0;
-
 void loop()
 {
     updateTransport();
@@ -244,46 +191,15 @@ void loop()
         knobPos = newKnobPos;
     }
 
-    switch (state.bgMode)
-    {
-    case 0 ... 4:
-        //patternWaterall(tick, dTick, state);
-        patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
-        break;
-    }
 
+    patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
     overlays[0]->fill(layer1, STRAND_LENGTH, tick, dTick, state);
 
     memcpy(leds, layer0, sizeof(leds));
-
     nblend(leds, layer1, STRAND_LENGTH, state.globalParams[2]);
-
-    if (state.dim)
-    {
-        fxTargetLevel = 255;
-    }
-    else
-    {
-        fxTargetLevel = 0;
-    }
-
-    if (fxTargetLevel > fxCurrentLevel)
-        fxCurrentLevel = min(fxCurrentLevel + 4, fxTargetLevel);
-
-    if (fxTargetLevel < fxCurrentLevel)
-        fxCurrentLevel = max(fxCurrentLevel - 4, fxTargetLevel);
-
-    for (int i = 0; i < STRAND_LENGTH; i++)
-    {
-        CHSV tempHSV = rgb2hsv_approximate(leds[i]);
-        obuff[i] = CHSV(45, tempHSV.sat, tempHSV.val);
-    }
-
-    nblend(leds, obuff, STRAND_LENGTH, fxCurrentLevel);
 
     updateDisplay(state);
 
     FastLED.show(); // display this frame
-    if (state.globalParams[5] > 0)
-        FastLED.delay(state.globalParams[5]);
+    // FastLED.delay(0);
 }
