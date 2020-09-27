@@ -79,7 +79,9 @@ void Scarf::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 #if defined(REVERSED)
         loc = STRAND_LENGTH - 1 - pix;
 #endif
+        uint8_t hueIndex = value / 2;
 
         leds[loc] = CHSV(hue, 255 * SATURATION, value);
+        leds[loc] = CHSV(state.getPaletteHue(hueIndex), 255 * SATURATION, value);
     }
 }

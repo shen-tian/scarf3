@@ -199,3 +199,23 @@ const char *State::getPatternLabel(int idx)
 {
     return pMeta[idx].label;
 }
+
+void State::setupPalette()
+{
+    uint8_t hueCenter = globalParams[0];
+    uint8_t hueSpan = globalParams[4] / 2;
+
+    CHSV colorStart = CHSV( hueCenter - hueSpan, 255, 255);
+    CHSV colorEnd  = CHSV( hueCenter + hueSpan, 255, 255);
+
+    currentPalette = CHSVPalette16(colorStart, colorEnd, colorStart);
+
+    if (hueSpan > 63){
+        fill_gradient(currentPalette.entries, 16, colorStart, colorEnd, colorStart, LONGEST_HUES);
+    }
+}
+
+uint8_t State::getPaletteHue(uint8_t idx){
+    CHSV color = rgb2hsv_approximate(ColorFromPalette(currentPalette, idx));
+    return color.hue;
+}

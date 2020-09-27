@@ -17,6 +17,7 @@
 #include "patterns/SimpleWave.h"
 #include "patterns/RainbowBlast.h"
 #include "patterns/Sparkle.h"
+#include "patterns/TestPattern.h"
 
 CRGB leds[STRAND_LENGTH];
 
@@ -45,6 +46,9 @@ void OnControlChange(byte channel, byte control, byte value)
     case 13:
         state.globalParams[0] = 2 * value;
         break;
+    case 14:
+        state.globalParams[4] = 2 * value;
+        break;
     case 2:
         state.globalParams[1] = 2 * value;
         break;
@@ -58,7 +62,7 @@ void OnControlChange(byte channel, byte control, byte value)
 
 void setup()
 {
-    patterns[0] = new Cloud(0);
+    patterns[0] = new TestPattern(0);
     patterns[1] = new Scarf(1);
     patterns[2] = new VariablePulse(2);
     patterns[3] = new SimpleWave(3);
@@ -191,6 +195,7 @@ void loop()
         knobPos = newKnobPos;
     }
 
+    state.setupPalette();
 
     patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
     overlays[0]->fill(layer1, STRAND_LENGTH, tick, dTick, state);

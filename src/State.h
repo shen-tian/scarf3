@@ -2,6 +2,7 @@
 #define STATE_H
 
 #include <stdint.h>
+#include <FastLED.h>
 
 enum paramType {NONE, NORMAL, CIRCULAR, OCTAVE };
 
@@ -40,6 +41,8 @@ public:
 
     float bpm = 120.0;
 
+    CRGBPalette16 currentPalette;
+
     State() {}
 
     void registerPattern(int idx, const char *label, paramMetadata *params);
@@ -60,6 +63,10 @@ public:
     paramType visibleParamType(int idx);
 
     const char* getPatternLabel(int idx);
+
+    void setupPalette();
+
+    uint8_t getPaletteHue(uint8_t idx);
 
 private:
     patternMetadata pMeta[5];

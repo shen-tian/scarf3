@@ -23,6 +23,6 @@ void RainbowBlast::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
     for (int i = 0; i < numLEDs; i++)
     {
         uint8_t hueIndex = per_pixel_hue_jump * i + crawl_speed_factor * clock;
-        leds[numLEDs - 1 - i] = ColorFromPalette(PartyColors_p, hueIndex, state.patternParams[paramIndex][0]);
+        leds[numLEDs - 1 - i] = ColorFromPalette(state.currentPalette, hueIndex, state.patternParams[paramIndex][0]);
     }
 }
