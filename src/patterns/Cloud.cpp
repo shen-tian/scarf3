@@ -31,8 +31,10 @@ void Cloud::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
         //value = ease8InOutApprox(value);
 
         uint8_t hue = inoise8(t / 32, 2000 + i * 5);
-        hue = map8(hue, 0, 100);
-        hue += state.globalParams[0] - 50;
+        // hue = map8(hue, 0, 100);
+        // hue += state.globalParams[0] - 50;
+
+        hue = state.getPaletteHue(hue);
 
         uint8_t sat = inoise8(t / 16, i * 5);
         sat = scale8(sat, 100);

@@ -63,7 +63,7 @@ void OnControlChange(byte channel, byte control, byte value)
 void setup()
 {
     patterns[0] = new TestPattern(0);
-    patterns[1] = new Scarf(1);
+    patterns[1] = new Cloud(1);
     patterns[2] = new VariablePulse(2);
     patterns[3] = new SimpleWave(3);
     patterns[4] = new RainbowBlast(4);
