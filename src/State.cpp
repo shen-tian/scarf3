@@ -1,4 +1,5 @@
 #include "State.h"
+#include "palettes.h"
 
 void State::incSelected()
 {
@@ -212,6 +213,24 @@ void State::setupPalette()
 
     if (hueSpan > 63){
         fill_gradient(currentPalette.entries, 16, colorStart, colorEnd, colorStart, LONGEST_HUES);
+    }
+
+    switch (globalParams[5]){
+        case 32 ... 63:
+            currentPalette = PartyColors_p;
+            break;
+        case 64 ... 95:
+            currentPalette = ForestColors_p;
+            break;
+        case 96 ... 127:
+            currentPalette = RainbowColors_p;
+            break;
+        case 128 ... 159:
+            currentPalette = aurora_gpp;
+            break;
+        case 160 ... 191:
+            currentPalette = bhw1_06_gp;
+            break;
     }
 }
 

@@ -39,6 +39,13 @@ State state = State();
 Pattern **patterns = new Pattern *[5];
 Pattern **overlays = new Pattern *[1];
 
+void writeOutput(){
+    for (int i = 0; i < 10; i++){
+        Serial.printf("%d, %d, %d, %d\n", i, leds[i].red, leds[i].green, leds[i].blue);
+    }
+    Serial.println();
+}
+
 void OnControlChange(byte channel, byte control, byte value)
 {
     switch (control)
@@ -49,14 +56,25 @@ void OnControlChange(byte channel, byte control, byte value)
     case 14:
         state.globalParams[4] = 2 * value;
         break;
+    case 15: 
+        state.globalParams[5] = 2 * value;
+        break;
     case 2:
         state.globalParams[1] = 2 * value;
         break;
     case 3:
         state.globalParams[2] = 2 * value;
         break;
+    // stop
     case 63:
         state.globalParams[3] += 128;
+        break;
+    // record
+    case 81:
+        if (value > 0) {
+            writeOutput();
+        }
+        break;
     }
 }
 
@@ -173,8 +191,6 @@ void loop()
     {
         state.cycleParam();
     }
-
-    // post process
 
     if (debouncer.fell())
     {

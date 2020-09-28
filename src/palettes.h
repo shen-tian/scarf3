@@ -1,12 +1,21 @@
 #ifndef PALETTES_H
 #define PALETTES_H
 
-// Gradient palette "bhw1_06_gp", originally from
-// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw1/tn/bhw1_06.png.index.html
-// converted for FastLED with gammas (2.6, 2.2, 2.5)
-// Size: 16 bytes of program space.
+#include <FastLED.h>
 
-DEFINE_GRADIENT_PALETTE( bhw1_06_gp ) {
+const TProgmemRGBGradientPalette_byte aurora_gpp[] = {
+    0, 120, 30, 28,
+   51, 120, 30, 28,
+   51, 150, 62, 32,
+  102, 150, 62, 32,
+  102, 206,154, 55,
+  153, 206,154, 55,
+  153,  79,133, 56,
+  204,  79,133, 56,
+  204, 103, 70, 96,
+  255, 103, 70, 96};
+
+  const TProgmemRGBGradientPalette_byte bhw1_06_gp[] = {
     0, 184,  1,128,
   160,   1,193,182,
   219, 153,227,190,

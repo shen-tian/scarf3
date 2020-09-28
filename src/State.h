@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <FastLED.h>
 
+#include "palettes.h"
+
 enum paramType {NONE, NORMAL, CIRCULAR, OCTAVE };
 
 struct paramMetadata{

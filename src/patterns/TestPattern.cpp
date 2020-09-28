@@ -15,6 +15,8 @@ TestPattern::TestPattern(int idx){
 void TestPattern::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
     for (int i = 0; i < 128; i ++){
-        leds[i] = ColorFromPalette(state.currentPalette, i * 2);
+        uint8_t cIndex = i * 2;
+        uint8_t brightness = state.patternParams[paramIndex][0];
+        leds[i] = ColorFromPalette(state.currentPalette, cIndex, brightness);
     }
 }
