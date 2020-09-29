@@ -1,6 +1,7 @@
 #include "VariablePulse.h"
 
-VariablePulse::VariablePulse(int idx){
+VariablePulse::VariablePulse(int idx)
+{
     paramIndex = idx;
     label = "V Pulse";
     pMetadata = new paramMetadata[6];
@@ -26,7 +27,7 @@ float VariablePulse::blend(float a, float b, float fraction)
 
 int VariablePulse::brightness_to_value(float brightness, float min_brightness)
 {
-    return blend(min_brightness, 1., brightness) * 128;
+    return blend(min_brightness, 1., brightness) * 255;
 }
 
 void VariablePulse::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
@@ -50,6 +51,21 @@ void VariablePulse::fill(CRGB *leds, long numLEDs, long t, long dt, State &state
         float brightness = cycle(numLEDs - i + crawl_offset * pulse_width, pulse_width, 0, 1);
         brightness = pow(brightness, peakedness);
         int value = brightness_to_value(brightness, min_brightness);
-        leds[i] = CHSV(state.globalParams[0], 255, value);
+        // leds[i] = CHSV(state.globalParams[0], 255, value);
+
+        value = (value * 1.25) - 64;
+        if (value > 255)
+            value = 255;
+        if (value < 0)
+            value = 0;
+
+        if (value > 8)
+        {
+            leds[i] = ColorFromPalette(state.currentPalette, value, value);
+        }
+        else
+        {
+            leds[i] = CRGB::Black;
+        }
     }
 }
