@@ -47,6 +47,8 @@ public:
 
     State() {}
 
+    bool playing = true;
+
     void registerPattern(int idx, const char *label, paramMetadata *params);
 
     void incSelected();

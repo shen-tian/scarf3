@@ -68,11 +68,29 @@ void OnControlChange(byte channel, byte control, byte value)
     case 3: // second fader on nanoKontrol
         state.globalParams[2] = 2 * value;
         break;
-    // stop
-    case 63: 
-        state.globalParams[3] += 128;
+    case 60: // prev track on nanoKontrol
+        if (value == 127)
+            state.bgMode = (state.bgMode + 5 - 1) % 5;
         break;
-    // record
+    case 61: // next track on nanoKontrol
+        if (value == 127)
+            state.bgMode = (state.bgMode + 1) % 5;
+        break;
+    case 63: // stop on nanoKontrol
+        if (value == 127)
+            state.playing = false;
+        break;
+    case 80: // play on nanoKontorl
+        if (value == 127)
+            state.playing = true;
+        break;
+    case 62: // back on nanoKontrol
+        if (value == 127)
+            state.globalParams[3] = 127;
+        if (value == 0)
+            state.globalParams[3] = 0;
+        break;
+     // record
     case 81:
         if (value > 0) {
             writeOutput();
@@ -149,7 +167,7 @@ void updateTransport()
     float dt = (nowT - t);
     // TODO: figure out how this does/doesn't drift out of sync
 
-    float du = dt * state.bpm / 120.0;
+    float du = state.playing ? dt * state.bpm / 120.0 : 0;
 
     if (state.globalParams[3] > 0)
     {
