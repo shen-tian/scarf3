@@ -18,8 +18,9 @@ void SimpleWave::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 
     for (int i = 0; i < numLEDs; i++)
     {
-        uint8_t val = cubicwave8(-t / 2 + i * 4);
+        uint8_t val = cubicwave8(-t / 4 + i * 4);
         // val = dim8_video(val);
         leds[i] = CHSV(state.globalParams[0], 255 - state.patternParams[paramIndex][1], val);
+        leds[i] = ColorFromPalette(state.currentPalette, val, dim8_video(val));
     }
 }
