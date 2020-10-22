@@ -50,23 +50,26 @@ void OnControlChange(byte channel, byte control, byte value)
 {
     switch (control)
     {
-    case 13:
+    case 13: // first pot on nanoKontrol
+    case 74: // first encoder on beatStep
         state.globalParams[0] = 2 * value;
         break;
-    case 14:
+    case 14: // second pot on nanoKontrol
+    case 71: // second encoder on Beatstep
         state.globalParams[4] = 2 * value;
         break;
-    case 15: 
+    case 15: // third pot on nanoKontrol
+    case 76: // third encoder on Beatstep
         state.globalParams[5] = 2 * value;
         break;
-    case 2:
+    case 2: // first fader on nanoKontrol
         state.globalParams[1] = 2 * value;
         break;
-    case 3:
+    case 3: // second fader on nanoKontrol
         state.globalParams[2] = 2 * value;
         break;
     // stop
-    case 63:
+    case 63: 
         state.globalParams[3] += 128;
         break;
     // record
@@ -75,7 +78,17 @@ void OnControlChange(byte channel, byte control, byte value)
             writeOutput();
         }
         break;
+    case 7:
+        state.incSelected();
+        break;
     }
+}
+
+void OnNoteOn(byte channel, byte note, byte velocity)
+{
+    state.globalParams[0] += 16;
+    if (state.globalParams[0] > 255)
+        state.globalParams[0] -= 255;
 }
 
 void setup()
@@ -113,6 +126,7 @@ void setup()
     myusb.begin();
 
     midi1.setHandleControlChange(OnControlChange);
+    midi1.setHandleNoteOn(OnNoteOn);
 
     FastLED.addLeds<APA102, 11, 13, BGR>(leds, STRAND_LENGTH);
     FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH);
