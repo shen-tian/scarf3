@@ -15,7 +15,7 @@ RainbowBlast::RainbowBlast(int idx)
 
 void RainbowBlast::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
-    float clock = t / 250. * state.visibleOctave(1);
+    float clock = t / 250. * state.octave(paramIndex, 1);
     // float per_pixel_hue_jump = 600 / STRAND_LENGTH;
     float per_pixel_hue_jump = state.patternParams[paramIndex][2] / 8;
     float crawl_speed_factor = 100;

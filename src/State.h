@@ -64,6 +64,8 @@ public:
     float visibleOctave(int idx);
     paramType visibleParamType(int idx);
 
+    float octave(int bgIdx, int idx);
+
     const char* getPatternLabel(int idx);
 
     void setupPalette();

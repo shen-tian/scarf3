@@ -32,7 +32,7 @@ int VariablePulse::brightness_to_value(float brightness, float min_brightness)
 
 void VariablePulse::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
-    float clock = t / 1000.0 * state.visibleOctave(1);
+    float clock = t / 1000.0 * state.octave(paramIndex, 1);
     // int BASE_HUE = 175;
     float density_scale_factor = numLEDs / 36.;
 

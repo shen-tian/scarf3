@@ -16,8 +16,8 @@ Cloud::Cloud(int idx)
 
 void Cloud::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
-    t *= state.visibleOctave(1);
-    dt *= state.visibleOctave(1);
+    t *= state.octave(paramIndex, 1);
+    dt *= state.octave(paramIndex, 1);
 
     float up = .50; //uprightness();
 

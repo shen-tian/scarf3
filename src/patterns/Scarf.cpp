@@ -41,8 +41,8 @@ Scarf::Scarf(int idx)
 
 void Scarf::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
-    t *= state.visibleOctave(1);
-    dt *= state.visibleOctave(1);
+    t *= state.octave(paramIndex, 1);
+    dt *= state.octave(paramIndex, 1);
 
     byte color = getClock(t, 2);
     byte pulse = inoise8(t / 4.) * .5;

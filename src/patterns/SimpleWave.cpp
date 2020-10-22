@@ -14,12 +14,12 @@ SimpleWave::SimpleWave(int idx){
 
 void SimpleWave::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
-     t *= state.visibleOctave(1);
+     t *= state.octave(paramIndex, 1);
 
     for (int i = 0; i < numLEDs; i++)
     {
         uint8_t val = cubicwave8(-t / 2 + i * 4);
         // val = dim8_video(val);
-        leds[i] = CHSV(state.globalParams[0], 255 - state.patternParams[2][1], val);
+        leds[i] = CHSV(state.globalParams[0], 255 - state.patternParams[paramIndex][1], val);
     }
 }
