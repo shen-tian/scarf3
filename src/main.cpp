@@ -48,18 +48,25 @@ void writeOutput(){
 
 void OnControlChange(byte channel, byte control, byte value)
 {
+    Serial.printf("#CC %i %i\n", control, value);
     switch (control)
     {
+    case 10: // first endcoder on beatstep
+        state.globalParams[0] += (value - 64); // relative mode #1
+        break;
+    case 74: // second encoder on beatStep
+        state.globalParams[4] += (value - 64); // relative mode #1
+        break;
+    case 71: // third encoder on Beatstep
+        state.globalParams[5] += (value - 64); // relative mode #1
+        break;      
     case 13: // first pot on nanoKontrol
-    case 74: // first encoder on beatStep
         state.globalParams[0] = 2 * value;
         break;
     case 14: // second pot on nanoKontrol
-    case 71: // second encoder on Beatstep
         state.globalParams[4] = 2 * value;
         break;
     case 15: // third pot on nanoKontrol
-    case 76: // third encoder on Beatstep
         state.globalParams[5] = 2 * value;
         break;
     case 2: // first fader on nanoKontrol
@@ -67,6 +74,12 @@ void OnControlChange(byte channel, byte control, byte value)
         break;
     case 3: // second fader on nanoKontrol
         state.globalParams[2] = 2 * value;
+        break;
+    case 82: // jog dial on nanoKontrol in sign magnitude mode
+        if (value < 64)
+            state.bpm += value * 0.5;
+        else
+            state.bpm -= (value - 64) * 0.5;        
         break;
     case 60: // prev track on nanoKontrol
         if (value == 127)
@@ -90,14 +103,10 @@ void OnControlChange(byte channel, byte control, byte value)
         if (value == 0)
             state.globalParams[3] = 0;
         break;
-     // record
-    case 81:
+    case 81: // record
         if (value > 0) {
             writeOutput();
         }
-        break;
-    case 7:
-        state.incSelected();
         break;
     }
 }
