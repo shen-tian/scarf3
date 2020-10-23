@@ -27,7 +27,7 @@ void State::incSelected()
             }
             break;
         default:
-            patternParams[bgMode][selectedIdx - 1] += 8;
+            tryChangePatternParam(bgMode, selectedIdx - 1, 8);
             break;
         }
         break;
@@ -60,7 +60,7 @@ void State::decSelected()
             }
             break;
         default:
-            patternParams[bgMode][selectedIdx - 1] -= 8;
+            tryChangePatternParam(bgMode, selectedIdx - 1, -8);
         }
         break;
     }
@@ -242,4 +242,26 @@ void State::setupPalette()
 uint8_t State::getPaletteHue(uint8_t idx){
     CHSV color = rgb2hsv_approximate(ColorFromPalette(currentPalette, idx));
     return color.hue;
+}
+
+void State::tryChangePatternParam(int bgIdx, int idx, int amount){
+    int curValue = patternParams[bgIdx][idx];
+
+    switch(pMeta[bgIdx].params[idx].type){
+    case CIRCULAR:
+        patternParams[bgIdx][idx] += amount;
+        break;
+    case NORMAL:
+        patternParams[bgIdx][idx] = constrain(curValue + amount, 0, 255);
+        break;
+    case OCTAVE:
+        if (amount > 0){
+            patternParams[bgIdx][idx] = constrain(curValue + 32, 0, 224);
+        } else {
+            patternParams[bgIdx][idx] = constrain(curValue - 32, 0, 224);
+        }
+        break;
+    case NONE:
+        break;
+    }
 }

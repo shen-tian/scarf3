@@ -76,6 +76,8 @@ public:
 
 private:
     patternMetadata pMeta[5];
+
+    void tryChangePatternParam(int bgIdx, int idx, int amount);
 };
 
 #endif
