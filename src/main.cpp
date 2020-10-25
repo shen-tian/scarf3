@@ -37,8 +37,7 @@ MIDIDevice midi1(myusb);
 
 State state = State();
 
-Pattern **patterns = new Pattern *[5];
-Pattern **overlays = new Pattern *[1];
+Pattern **patterns = new Pattern *[32];
 
 void writeOutput(){
     for (int i = 0; i < 10; i++){
@@ -182,9 +181,18 @@ void setup()
     patterns[3] = new SimpleWave();
     patterns[4] = new RainbowBlast();
 
+    patterns[5] = new Piano(); 
+    patterns[6] = new Sparkle();
+
     for (int i = 0; i < 5; i++)
     {
         int assignedIdx = state.registerPattern(0, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
+        patterns[i]->setParamIdx(assignedIdx);
+    }
+
+    for (int i = 5; i < 6; i++)
+    {
+        int assignedIdx = state.registerPattern(1, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
         patterns[i]->setParamIdx(assignedIdx);
     }
 
@@ -197,7 +205,7 @@ void setup()
 
     state.registerGlobalParams(globalParamsMeta);
 
-    overlays[0] = new Piano(); //Sparkle();
+    Serial.println(state.activePatternIndex(1));
 
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
@@ -327,7 +335,7 @@ void loop()
     state.setupPalette();
 
     patterns[state.activePatternIndex(0)]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
-    overlays[0]->fill(layer1, STRAND_LENGTH, tick, dTick, state);
+    patterns[state.activePatternIndex(1)]->fill(layer1, STRAND_LENGTH, tick, dTick, state);
 
     memcpy(leds, layer0, sizeof(leds));
     nblend(leds, layer1, STRAND_LENGTH, state.globalParams[2]);

@@ -164,6 +164,8 @@ int State::registerPattern(int layerIdx, const char *label, paramMetadata *param
         }
     }
 
+    Serial.printf("layer %i pos %i idx %i %s\n", layerIdx, curLayerIndex, overallIndex, label);
+
     return overallIndex;
 }
 
@@ -173,6 +175,8 @@ int State::activePatternIndex(int layer)
         case 0: 
             return patternIndex[0][bgMode];
         case 1: 
+            return patternIndex[1][0];
+        default:
             return 0;
     }
 }
@@ -289,10 +293,10 @@ void State::tryChangeVisibleParam(int idx, int amount){
 
 void State::nextBG()
 {
-    bgMode = constrain(bgMode + 1, 0, 4);
+    bgMode = constrain(bgMode + 1, 0, patternCount[0] - 1);
 }
 
 void State::prevBG()
 {
-    bgMode = constrain(bgMode - 1, 0, 4);
+    bgMode = constrain(bgMode - 1, 0, patternCount[0] - 1);
 }

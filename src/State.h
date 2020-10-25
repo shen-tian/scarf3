@@ -6,6 +6,8 @@
 
 #include "palettes.h"
 
+#define MAX_PATTERNS 32
+
 enum paramType {NONE, NORMAL, CIRCULAR, OCTAVE };
 
 struct paramMetadata{
@@ -23,7 +25,7 @@ class State
 public:
     int bgMode = 0;
 
-    uint8_t patternParams[32][6];
+    uint8_t patternParams[MAX_PATTERNS][6];
 
     uint8_t globalParams[6];
     /*
@@ -86,12 +88,12 @@ public:
     int activePatternIndex(int layer);
 
 private:
-    patternMetadata pMeta[5];
+    patternMetadata pMeta[MAX_PATTERNS];
     patternMetadata gMeta = patternMetadata();
 
     int numPatterns = 0;
     int patternCount[2] = {0 , 0};
-    int patternIndex[2][16];
+    int patternIndex[2][MAX_PATTERNS / 2];
 };
 
 #endif
