@@ -10,12 +10,18 @@
 class Pattern
 {
 protected:
-    const char* label;
     paramMetadata *pMetadata;
+    uint8_t patternParam(State &state, int idx);
+    float octave(State &state, int idx);
+
 public:
+    Pattern(int paramIdx, const char* labelStr);
     virtual void fill(CRGB *leds, long numLEDs, long t, long dt, State &state) = 0;
     const char *getLabel();
     paramMetadata *getParamMetaData();
+private:
+    int paramIndex;
+    const char* label;
 };
 
 #endif

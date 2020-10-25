@@ -24,12 +24,10 @@ byte Scarf::modDist(byte x, byte y)
     return min(min(abs(x - y), abs(x - y + 256)), abs(x - y - 256));
 }
 
-Scarf::Scarf(int idx)
+Scarf::Scarf(int idx) : Pattern(idx, "Scarf")
 {
     pos = 0;
-    paramIndex = idx;
 
-    label = "Scarf";
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};
     pMetadata[1] = {OCTAVE, 128};
@@ -41,8 +39,8 @@ Scarf::Scarf(int idx)
 
 void Scarf::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
-    t *= state.octave(paramIndex, 1);
-    dt *= state.octave(paramIndex, 1);
+    t *= octave(state, 1);
+    dt *= octave(state, 1);
 
     byte color = getClock(t, 2);
     byte pulse = inoise8(t / 4.) * .5;

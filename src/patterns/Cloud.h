@@ -12,7 +12,6 @@ public:
 
 private:
     long pos;
-    int paramIndex;
 };
 
 #endif

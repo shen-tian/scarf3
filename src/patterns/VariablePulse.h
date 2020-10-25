@@ -11,7 +11,6 @@ public:
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 
 private:
-    int paramIndex;
     // return a cyclical (sine wave) value between min and max
     float cycle(float t, float period, float min, float max);
 

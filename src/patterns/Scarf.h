@@ -22,7 +22,6 @@ public:
 
 private:
     long pos;
-    int paramIndex;
     byte getClock(unsigned long mil, byte rate);
     byte modDist(byte x, byte y);
 };

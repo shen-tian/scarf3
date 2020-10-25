@@ -24,6 +24,7 @@ public:
     int bgMode = 0;
 
     uint8_t patternParams[5][6];
+    uint8_t overlayParams[2][6];
 
     uint8_t globalParams[6];
     /*
@@ -68,8 +69,6 @@ public:
 
     uint8_t visibleParam(int idx);
     paramType visibleParamType(int idx);
-
-    float octave(int bgIdx, int idx);
 
     const char* getPatternLabel(int idx);
 

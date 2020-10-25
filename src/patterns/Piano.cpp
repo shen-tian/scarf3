@@ -1,9 +1,7 @@
 #include "Piano.h"
 
-Piano::Piano(int idx)
+Piano::Piano(int idx) : Pattern(idx, "Piano")
 {
-    paramIndex = idx;
-    label = "Piano";
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 255};
     pMetadata[1] = {NORMAL, 16};

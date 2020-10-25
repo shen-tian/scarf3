@@ -1,10 +1,8 @@
 #include "Cloud.h"
 
-Cloud::Cloud(int idx)
+Cloud::Cloud(int idx) : Pattern(idx, "Cloud")
 {
-    pos = 0;
-    paramIndex = idx;
-    label = "Cloud";
+    pos = 0;\
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};
     pMetadata[1] = {OCTAVE, 96};
@@ -16,8 +14,8 @@ Cloud::Cloud(int idx)
 
 void Cloud::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
-    t *= state.octave(paramIndex, 1);
-    dt *= state.octave(paramIndex, 1);
+    t *= octave(state, 1);
+    dt *= octave(state, 1);
 
     float up = .50; //uprightness();
 
@@ -49,5 +47,5 @@ void Cloud::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
     }
 
     nblend(leds, defaultVariant, numLEDs, 255);
-    nblend(leds, fullPaletteVariant, numLEDs, state.patternParams[paramIndex][2]);
+    nblend(leds, fullPaletteVariant, numLEDs, patternParam(state, 2));
 }

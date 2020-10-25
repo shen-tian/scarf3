@@ -19,9 +19,7 @@ public:
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 
 private:
-    int paramIndex;
-
-    pianoKey keys[255];
+    pianoKey keys[256];
 };
 
 #endif

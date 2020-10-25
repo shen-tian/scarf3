@@ -1,9 +1,7 @@
 #include "Waterfall.h"
 
-Waterfall::Waterfall(int idx)
+Waterfall::Waterfall(int idx) : Pattern(idx, "Sparkle")
 {
-    paramIndex = idx;
-    label = "Sparkle";
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};
     pMetadata[1] = {OCTAVE, 96};
@@ -26,15 +24,15 @@ void Waterfall::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
         leds[i] = leds[i - 1];
     }
 
-    if (state.patternParams[0][0] == 0)
+    if (patternParam(state, 0) == 0)
     {
 
         double v = inoise16(t * 65536 / 128) / 65535.0;
 
-        v = pow(v, 1 + (state.patternParams[0][1] / 32));
+        v = pow(v, 1 + (patternParam(state, 0) / 32));
         uint8_t value = v * 255;
 
-        if (value < state.patternParams[0][2])
+        if (value < patternParam(state, 2))
             value = 0;
 
         // uint8_t sat = inoise8(t + 10000);

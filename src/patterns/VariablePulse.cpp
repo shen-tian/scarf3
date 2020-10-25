@@ -1,9 +1,7 @@
 #include "VariablePulse.h"
 
-VariablePulse::VariablePulse(int idx)
+VariablePulse::VariablePulse(int idx) : Pattern(idx, "V Pulse")
 {
-    paramIndex = idx;
-    label = "V Pulse";
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};
     pMetadata[1] = {OCTAVE, 96};
@@ -32,7 +30,7 @@ int VariablePulse::brightness_to_value(float brightness, float min_brightness)
 
 void VariablePulse::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
-    float clock = t / 1000.0 * state.octave(paramIndex, 1);
+    float clock = t / 1000.0 * octave(state, 1);
     // int BASE_HUE = 175;
     float density_scale_factor = numLEDs / 36.;
 

@@ -1,8 +1,7 @@
 #include "TestPattern.h"
 
-TestPattern::TestPattern(int idx){
-    paramIndex = idx;
-    label = "Test";
+TestPattern::TestPattern(int idx) : Pattern(idx, "Test")
+{
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};
     pMetadata[1] = {OCTAVE, 96};
@@ -16,7 +15,7 @@ void TestPattern::fill(CRGB *leds, long numLEDs, long t, long dt, State &state)
 {
     for (int i = 0; i < 128; i ++){
         uint8_t cIndex = i * 2;
-        uint8_t brightness = state.patternParams[paramIndex][0];
+        uint8_t brightness = patternParam(state, 0);
         leds[i] = ColorFromPalette(state.currentPalette, cIndex, brightness);
     }
 }
