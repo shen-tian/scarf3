@@ -18,6 +18,7 @@
 #include "patterns/RainbowBlast.h"
 #include "patterns/Sparkle.h"
 #include "patterns/TestPattern.h"
+#include "patterns/Piano.h"
 
 CRGB leds[STRAND_LENGTH];
 
@@ -159,11 +160,16 @@ void OnControlChange(byte channel, byte control, byte value)
     }
 }
 
-void OnNoteOn(byte channel, byte note, byte velocity)
+void onNoteOn(byte channel, byte note, byte velocity)
 {
-    state.globalParams[0] += 16;
-    if (state.globalParams[0] > 255)
-        state.globalParams[0] -= 255;
+    Serial.printf("#Note On  %03d %03d\n", note, velocity);
+    state.notes[note] = velocity * 2;\
+}
+
+void onNoteOff(byte channel, byte note, byte velocity)
+{
+    Serial.printf("#Note Off %03d %03d\n", note, velocity);
+    state.notes[note] = 0;\
 }
 
 paramMetadata globalParamsMeta[6];
@@ -183,14 +189,14 @@ void setup()
 
     globalParamsMeta[0] = {CIRCULAR, 128};
     globalParamsMeta[1] = {NORMAL, 0};
-    globalParamsMeta[2] = {NONE, 0};
+    globalParamsMeta[2] = {NORMAL, 192};
     globalParamsMeta[3] = {OCTAVE, 0};
     globalParamsMeta[4] = {NORMAL, 0};
     globalParamsMeta[5] = {OCTAVE, 0};
 
     state.registerGlobalParams(globalParamsMeta);
 
-    overlays[0] = new Sparkle(0);
+    overlays[0] = new Piano(0); //Sparkle(0);
 
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
@@ -212,7 +218,8 @@ void setup()
     myusb.begin();
 
     midi1.setHandleControlChange(OnControlChange);
-    midi1.setHandleNoteOn(OnNoteOn);
+    midi1.setHandleNoteOn(onNoteOn);
+    midi1.setHandleNoteOff(onNoteOff);
 
     FastLED.addLeds<APA102, 11, 13, BGR>(leds, STRAND_LENGTH);
     FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH);

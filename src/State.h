@@ -45,6 +45,9 @@ public:
 
     CRGBPalette16 currentPalette;
 
+    int notes[256];
+    bool notesOff[256];
+
     State() {}
 
     bool playing = true;
