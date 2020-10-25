@@ -12,7 +12,7 @@ void State::incSelected()
             bpm += 0.5;
             break;
         default:
-            globalParams[selectedIdx - 1] += 8;
+            tryChangeGlobalParam(selectedIdx - 1, 8);
             break;
         }
         break;
@@ -45,7 +45,7 @@ void State::decSelected()
             bpm -= 0.5;
             break;
         default:
-            globalParams[selectedIdx - 1] -= 8;
+            tryChangeGlobalParam(selectedIdx - 1, -8);
             break;
         }
         break;
@@ -84,7 +84,7 @@ void State::zeroSelected()
             bpm = 120.0;
             break;
         default:
-            globalParams[selectedIdx - 1] = 0;
+            globalParams[selectedIdx - 1] = gMeta.params[selectedIdx - 1].defaultValue;
             break;
         }
         break;
@@ -95,7 +95,7 @@ void State::zeroSelected()
             bgMode = 0;
             break;
         default:
-            patternParams[bgMode][selectedIdx - 1] = 0;
+            patternParams[bgMode][selectedIdx - 1] = pMeta[bgMode].params[selectedIdx - 1].defaultValue;
         }
         break;
     }
@@ -164,7 +164,7 @@ paramType State::visibleParamType(int idx)
     switch (selectedLayer)
     {
     case 0:
-        return NORMAL;
+        return gMeta.params[idx].type;
     case 1:
         return pMeta[bgMode].params[idx].type;
     default:
@@ -197,6 +197,17 @@ void State::registerPattern(int idx, const char *label, paramMetadata *params)
         if (params[i].type != NONE)
         {
             patternParams[idx][i] = params[i].defaultValue;
+        }
+    }
+}
+
+void State::registerGlobalParams(paramMetadata *params){
+    //gMeta = new patternMetadata();
+    gMeta.params = params;
+    for (int i = 0; i < 6; i ++)
+    {
+        if (params[i].type != NONE){
+            globalParams[i] = params[i].defaultValue;
         }
     }
 }
@@ -259,6 +270,28 @@ void State::tryChangePatternParam(int bgIdx, int idx, int amount){
             patternParams[bgIdx][idx] = constrain(curValue + 32, 0, 224);
         } else {
             patternParams[bgIdx][idx] = constrain(curValue - 32, 0, 224);
+        }
+        break;
+    case NONE:
+        break;
+    }
+}
+
+void State::tryChangeGlobalParam(int idx, int amount){
+     int curValue = globalParams[idx];
+
+    switch(gMeta.params[idx].type){
+    case CIRCULAR:
+        globalParams[idx] += amount;
+        break;
+    case NORMAL:
+        globalParams[idx] = constrain(curValue + amount, 0, 255);
+        break;
+    case OCTAVE:
+        if (amount > 0){
+            globalParams[idx] = constrain(curValue + 32, 0, 224);
+        } else {
+            globalParams[idx] = constrain(curValue - 32, 0, 224);
         }
         break;
     case NONE:

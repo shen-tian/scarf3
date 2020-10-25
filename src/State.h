@@ -50,6 +50,7 @@ public:
     bool playing = true;
 
     void registerPattern(int idx, const char *label, paramMetadata *params);
+    void registerGlobalParams(paramMetadata *params);
 
     void incSelected();
     void decSelected();
@@ -74,9 +75,13 @@ public:
 
     uint8_t getPaletteHue(uint8_t idx);
 
+    void tryChangeGlobalParam(int idx, int amount);
+
 private:
     patternMetadata pMeta[5];
+    patternMetadata gMeta = patternMetadata();
 
+    
     void tryChangePatternParam(int bgIdx, int idx, int amount);
 };
 

@@ -52,13 +52,13 @@ void OnControlChange(byte channel, byte control, byte value)
     switch (control)
     {
     case 10: // first endcoder on beatstep
-        state.globalParams[0] += (value - 64); // relative mode #1
+        state.tryChangeGlobalParam(0, (value - 64)); // relative mode #1
         break;
     case 74: // second encoder on beatStep
-        state.globalParams[4] += (value - 64); // relative mode #1
+        state.tryChangeGlobalParam(4, (value - 64)); // relative mode #1
         break;
     case 71: // third encoder on Beatstep
-        state.globalParams[5] += (value - 64); // relative mode #1
+        state.tryChangeGlobalParam(5, (value - 64)); // relative mode #1
         break;      
     case 13: // first pot on nanoKontrol
         state.globalParams[0] = 2 * value;
@@ -118,6 +118,8 @@ void OnNoteOn(byte channel, byte note, byte velocity)
         state.globalParams[0] -= 255;
 }
 
+paramMetadata globalParamsMeta[6];
+
 void setup()
 {
     patterns[0] = new TestPattern(0);
@@ -130,6 +132,15 @@ void setup()
     {
         state.registerPattern(i, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
     }
+
+    globalParamsMeta[0] = {CIRCULAR, 128};
+    globalParamsMeta[1] = {NORMAL, 0};
+    globalParamsMeta[2] = {NONE, 0};
+    globalParamsMeta[3] = {OCTAVE, 0};
+    globalParamsMeta[4] = {NORMAL, 0};
+    globalParamsMeta[5] = {OCTAVE, 0};
+
+    state.registerGlobalParams(globalParamsMeta);
 
     overlays[0] = new Sparkle(0);
 
