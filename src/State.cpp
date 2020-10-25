@@ -16,14 +16,14 @@ void State::incSelected()
             break;
         }
         break;
-    case 1:
+    case 1 ... 2:
         switch (selectedIdx)
         {
         case 0:
-            nextBG();
+            nextPattern(selectedLayer - 1);
             break;
         default:
-            tryChangePatternParam(bgMode, selectedIdx - 1, 8);
+            tryChangePatternParam(activePatternIndex(), selectedIdx - 1, 8);
             break;
         }
         break;
@@ -45,14 +45,14 @@ void State::decSelected()
             break;
         }
         break;
-    case 1:
+    case 1 ... 2:
         switch (selectedIdx)
         {
         case 0:
-            prevBG();
+            prevPattern(selectedLayer - 1);
             break;
         default:
-            tryChangePatternParam(bgMode, selectedIdx - 1, -8);
+            tryChangePatternParam(activePatternIndex(), selectedIdx - 1, -8);
         }
         break;
     }
@@ -80,14 +80,14 @@ void State::zeroSelected()
             break;
         }
         break;
-    case 1:
+    case 1 ... 2:
         switch (selectedIdx)
         {
         case 0:
-            bgMode = 0;
+            selectedPattern[selectedLayer - 1] = 0;
             break;
         default:
-            patternParams[bgMode][selectedIdx - 1] = pMeta[bgMode].params[selectedIdx - 1].defaultValue;
+            patternParams[activePatternIndex()][selectedIdx - 1] = pMeta[activePatternIndex()].params[selectedIdx - 1].defaultValue;
         }
         break;
     }
@@ -108,8 +108,8 @@ uint8_t State::visibleParam(int idx)
     {
     case 0:
         return globalParams[idx];
-    case 1:
-        return patternParams[bgMode][idx];
+    case 1 ... 2:
+        return patternParams[activePatternIndex()][idx];
     default:
         return 7;
     }
@@ -121,8 +121,8 @@ paramType State::visibleParamType(int idx)
     {
     case 0:
         return gMeta.params[idx].type;
-    case 1:
-        return pMeta[bgMode].params[idx].type;
+    case 1 ... 2:
+        return pMeta[activePatternIndex()].params[idx].type;
     default:
         return NONE;
     }
@@ -172,13 +172,20 @@ int State::registerPattern(int layerIdx, const char *label, paramMetadata *param
 int State::activePatternIndex(int layer)
 {
     switch(layer){
-        case 0: 
-            return patternIndex[0][bgMode];
-        case 1: 
-            return patternIndex[1][0];
+        case 0 ... 1: 
+            return patternIndex[layer][selectedPattern[layer]];
         default:
             return 0;
     }
+}
+
+int State::activePatternIndex()
+{
+    if (selectedLayer == 1 || selectedLayer == 2)
+        return activePatternIndex(selectedLayer - 1);
+    else
+        return -1;
+    
 }
 
 void State::registerGlobalParams(paramMetadata *params){
@@ -285,18 +292,18 @@ void State::tryChangeVisibleParam(int idx, int amount){
     case 0:    
         tryChangeGlobalParam(idx, amount);
         break;  
-    case 1: 
-        tryChangePatternParam(bgMode, idx, amount);
+    case 1 ... 2: 
+        tryChangePatternParam(activePatternIndex(), idx, amount);
         break;
     }
 }
 
-void State::nextBG()
+void State::nextPattern(int layerIdx)
 {
-    bgMode = constrain(bgMode + 1, 0, patternCount[0] - 1);
+    selectedPattern[layerIdx] = constrain(selectedPattern[layerIdx] + 1, 0, patternCount[layerIdx] - 1);
 }
 
-void State::prevBG()
+void State::prevPattern(int layerIdx)
 {
-    bgMode = constrain(bgMode - 1, 0, patternCount[0] - 1);
+    selectedPattern[layerIdx] = constrain(selectedPattern[layerIdx] - 1, 0, patternCount[layerIdx] - 1);
 }

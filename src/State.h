@@ -23,7 +23,7 @@ struct patternMetadata{
 class State
 {
 public:
-    int bgMode = 0;
+    int selectedPattern[2] = {0, 0};
 
     uint8_t patternParams[MAX_PATTERNS][6];
 
@@ -82,10 +82,11 @@ public:
     
     void tryChangeVisibleParam(int idx, int amount);
 
-    void nextBG();
-    void prevBG();
+    void nextPattern(int layerIdx);
+    void prevPattern(int layerIdx);
 
     int activePatternIndex(int layer);
+    int activePatternIndex();
 
 private:
     patternMetadata pMeta[MAX_PATTERNS];

@@ -66,9 +66,9 @@ void OnControlChange(byte channel, byte control, byte value)
         break;
     case 114:
         if (value > 64)
-            state.nextBG();
+            state.nextPattern(0);
         else
-            state.prevBG();
+            state.prevPattern(0);
         break;
     case 18:
         state.tryChangeVisibleParam(3, (value - 64));
@@ -131,11 +131,11 @@ void OnControlChange(byte channel, byte control, byte value)
         break;
     case 60: // prev track on nanoKontrol
         if (value == 127)
-            state.bgMode = (state.bgMode + 5 - 1) % 5;
+            state.prevPattern(0);
         break;
     case 61: // next track on nanoKontrol
         if (value == 127)
-            state.bgMode = (state.bgMode + 1) % 5;
+            state.nextPattern(0);
         break;
     case 63: // stop on nanoKontrol
         if (value == 127)
@@ -168,7 +168,7 @@ void onNoteOn(byte channel, byte note, byte velocity)
 void onNoteOff(byte channel, byte note, byte velocity)
 {
     Serial.printf("#Note Off %03d %03d\n", note, velocity);
-    state.notes[note] = 0;\
+    state.notes[note] = 0;
 }
 
 paramMetadata globalParamsMeta[6];
@@ -184,13 +184,13 @@ void setup()
     patterns[5] = new Piano(); 
     patterns[6] = new Sparkle();
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i <= 4; i++)
     {
         int assignedIdx = state.registerPattern(0, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
         patterns[i]->setParamIdx(assignedIdx);
     }
 
-    for (int i = 5; i < 6; i++)
+    for (int i = 5; i <= 6; i++)
     {
         int assignedIdx = state.registerPattern(1, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
         patterns[i]->setParamIdx(assignedIdx);

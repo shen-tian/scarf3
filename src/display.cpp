@@ -141,14 +141,9 @@ void updateDisplay(State &state)
         lcd.setDrawColor(1);
     }
 
-    if (state.selectedLayer == 1)
+    if (state.selectedLayer == 1 || state.selectedLayer == 2)
     {
-        switch (state.bgMode)
-        {
-        case 0 ... 4:
-            lcd.drawStr(10, 51, state.getPatternLabel(state.bgMode));
-            break;
-        }
+        lcd.drawStr(10, 51, state.getPatternLabel(state.activePatternIndex()));
     }
 
     for (int i = 0; i < 4; i++)
