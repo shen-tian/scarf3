@@ -20,11 +20,7 @@ void State::incSelected()
         switch (selectedIdx)
         {
         case 0:
-            bgMode++;
-            if (bgMode > 4)
-            {
-                bgMode = 0;
-            }
+            nextBG();
             break;
         default:
             tryChangePatternParam(bgMode, selectedIdx - 1, 8);
@@ -53,11 +49,7 @@ void State::decSelected()
         switch (selectedIdx)
         {
         case 0:
-            bgMode--;
-            if (bgMode < 0)
-            {
-                bgMode = 4;
-            }
+            prevBG();
             break;
         default:
             tryChangePatternParam(bgMode, selectedIdx - 1, -8);
@@ -143,19 +135,6 @@ float State::octave(int bgIdx, int idx)
         return 8;
     case 224 ... 255:
         return 16;
-    }
-}
-
-float State::visibleOctave(int idx)
-{
-    switch (selectedLayer)
-    {
-    case 0:
-        return globalParams[idx];
-    case 1:
-        return octave(bgMode, idx);
-    default:
-        return 1;
     }
 }
 
@@ -297,4 +276,26 @@ void State::tryChangeGlobalParam(int idx, int amount){
     case NONE:
         break;
     }
+}
+
+void State::tryChangeVisibleParam(int idx, int amount){
+    switch (selectedLayer)
+    {
+    case 0:    
+        tryChangeGlobalParam(idx, amount);
+        break;  
+    case 1: 
+        tryChangePatternParam(bgMode, idx, amount);
+        break;
+    }
+}
+
+void State::nextBG()
+{
+    bgMode = constrain(bgMode + 1, 0, 4);
+}
+
+void State::prevBG()
+{
+    bgMode = constrain(bgMode - 1, 0, 4);
 }

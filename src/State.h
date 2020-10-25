@@ -64,7 +64,6 @@ public:
     void recordTick(long tickMS);
 
     uint8_t visibleParam(int idx);
-    float visibleOctave(int idx);
     paramType visibleParamType(int idx);
 
     float octave(int bgIdx, int idx);
@@ -75,14 +74,17 @@ public:
 
     uint8_t getPaletteHue(uint8_t idx);
 
+    void tryChangePatternParam(int bgIdx, int idx, int amount);
     void tryChangeGlobalParam(int idx, int amount);
+    
+    void tryChangeVisibleParam(int idx, int amount);
+
+    void nextBG();
+    void prevBG();
 
 private:
     patternMetadata pMeta[5];
     patternMetadata gMeta = patternMetadata();
-
-    
-    void tryChangePatternParam(int bgIdx, int idx, int amount);
 };
 
 #endif

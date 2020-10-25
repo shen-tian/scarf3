@@ -51,15 +51,63 @@ void OnControlChange(byte channel, byte control, byte value)
     Serial.printf("#CC %i %i\n", control, value);
     switch (control)
     {
-    case 10: // first endcoder on beatstep
-        state.tryChangeGlobalParam(0, (value - 64)); // relative mode #1
+    // visible controls on Beatstep (left set of encoders, relative mode #1)
+    case 10: 
+        // ??
         break;
-    case 74: // second encoder on beatStep
-        state.tryChangeGlobalParam(4, (value - 64)); // relative mode #1
+    case 74:
+        state.tryChangeVisibleParam(0, (value - 64));
         break;
-    case 71: // third encoder on Beatstep
-        state.tryChangeGlobalParam(5, (value - 64)); // relative mode #1
-        break;      
+    case 71:
+        state.tryChangeVisibleParam(1, (value - 64));
+        break;
+    case 76:
+        state.tryChangeVisibleParam(2, (value - 64));
+        break;
+    case 114:
+        if (value > 64)
+            state.nextBG();
+        else
+            state.prevBG();
+        break;
+    case 18:
+        state.tryChangeVisibleParam(3, (value - 64));
+        break;
+    case 19:
+        state.tryChangeVisibleParam(4, (value - 64));
+        break;
+    case 16:
+        state.tryChangeVisibleParam(5, (value - 64));
+        break;
+
+    // global params on Beatstep (right set of encoders, relative mode #1)
+
+
+    case 77:
+        // ??
+        break;
+    case 93:
+        state.tryChangeGlobalParam(0, (value - 64));
+        break;
+    case 73:
+        state.tryChangeGlobalParam(1, (value - 64));
+        break;
+    case 75:
+        state.tryChangeGlobalParam(2, (value - 64));
+        break;
+    case 17:
+        // ??
+        break;
+    case 91:
+        state.tryChangeGlobalParam(3, (value - 64));
+        break;
+    case 79:
+        state.tryChangeGlobalParam(4, (value - 64));
+        break;
+    case 72:
+        state.tryChangeGlobalParam(5, (value - 64));
+        break;
+
     case 13: // first pot on nanoKontrol
         state.globalParams[0] = 2 * value;
         break;
@@ -222,14 +270,8 @@ void updateTransport()
     t = nowT;
 }
 
-void loop()
+void handleBuiltInControls()
 {
-    updateTransport();
-
-    myusb.Task();
-
-    midi1.read(1);
-
     debouncer.update();
     debouncer2.update();
     debouncer3.update();
@@ -262,6 +304,17 @@ void loop()
         state.decSelected();
         knobPos = newKnobPos;
     }
+
+}
+
+void loop()
+{
+    updateTransport();
+
+    handleBuiltInControls();
+    myusb.Task();
+
+    midi1.read(1);
 
     state.setupPalette();
 
