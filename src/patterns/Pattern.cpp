@@ -4,8 +4,11 @@ const char* Pattern::getLabel(){
     return label;
 }
 
-Pattern::Pattern(int paramIdx, const char* labelStr){
-    paramIndex = paramIdx;
+void Pattern::setParamIdx(int idx){
+    paramIndex = idx;
+}
+
+Pattern::Pattern(const char* labelStr){
     label = labelStr;
 }
 

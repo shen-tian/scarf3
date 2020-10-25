@@ -143,17 +143,37 @@ void State::nextBeat()
     }
 }
 
-void State::registerPattern(int idx, const char *label, paramMetadata *params)
+int State::registerPattern(int layerIdx, const char *label, paramMetadata *params)
 {
-    pMeta[idx].label = label;
-    pMeta[idx].params = params;
+    int overallIndex = numPatterns;
+    int curLayerIndex = patternCount[layerIdx];
+
+    patternIndex[layerIdx][curLayerIndex] = overallIndex;
+
+    numPatterns++;
+    patternCount[layerIdx]++;
+
+    pMeta[overallIndex].label = label;
+    pMeta[overallIndex].params = params;
 
     for (int i = 0; i < 6; i++)
     {
         if (params[i].type != NONE)
         {
-            patternParams[idx][i] = params[i].defaultValue;
+            patternParams[overallIndex][i] = params[i].defaultValue;
         }
+    }
+
+    return overallIndex;
+}
+
+int State::activePatternIndex(int layer)
+{
+    switch(layer){
+        case 0: 
+            return patternIndex[0][bgMode];
+        case 1: 
+            return 0;
     }
 }
 

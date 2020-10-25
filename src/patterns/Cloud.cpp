@@ -1,8 +1,8 @@
 #include "Cloud.h"
 
-Cloud::Cloud(int idx) : Pattern(idx, "Cloud")
+Cloud::Cloud() : Pattern("Cloud")
 {
-    pos = 0;\
+    pos = 0;
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};
     pMetadata[1] = {OCTAVE, 96};

@@ -15,7 +15,7 @@ struct pianoKey {
 class Piano : public Pattern
 {
 public:
-    Piano(int idx);
+    Piano();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 
 private:

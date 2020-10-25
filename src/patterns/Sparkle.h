@@ -7,7 +7,7 @@
 class Sparkle : public Pattern
 {
 public:
-    Sparkle(int idx);
+    Sparkle();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 };
 

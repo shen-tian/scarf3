@@ -23,8 +23,7 @@ class State
 public:
     int bgMode = 0;
 
-    uint8_t patternParams[5][6];
-    uint8_t overlayParams[2][6];
+    uint8_t patternParams[32][6];
 
     uint8_t globalParams[6];
     /*
@@ -53,7 +52,7 @@ public:
 
     bool playing = true;
 
-    void registerPattern(int idx, const char *label, paramMetadata *params);
+    int registerPattern(int layerIdx, const char *label, paramMetadata *params);
     void registerGlobalParams(paramMetadata *params);
 
     void incSelected();
@@ -84,9 +83,15 @@ public:
     void nextBG();
     void prevBG();
 
+    int activePatternIndex(int layer);
+
 private:
     patternMetadata pMeta[5];
     patternMetadata gMeta = patternMetadata();
+
+    int numPatterns = 0;
+    int patternCount[2] = {0 , 0};
+    int patternIndex[2][16];
 };
 
 #endif

@@ -7,7 +7,7 @@
 class TestPattern : public Pattern
 {
 public:
-    TestPattern(int idx);
+    TestPattern();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 };
 

@@ -1,6 +1,6 @@
 #include "VariablePulse.h"
 
-VariablePulse::VariablePulse(int idx) : Pattern(idx, "V Pulse")
+VariablePulse::VariablePulse() : Pattern("V Pulse")
 {
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};

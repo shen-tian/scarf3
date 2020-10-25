@@ -1,6 +1,6 @@
 #include "Sparkle.h"
 
-Sparkle::Sparkle(int idx) : Pattern(idx, "Sparkle")
+Sparkle::Sparkle() : Pattern("Sparkle")
 {
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};

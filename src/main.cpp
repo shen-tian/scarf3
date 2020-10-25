@@ -176,15 +176,16 @@ paramMetadata globalParamsMeta[6];
 
 void setup()
 {
-    patterns[0] = new TestPattern(0);
-    patterns[1] = new Cloud(1);
-    patterns[2] = new VariablePulse(2);
-    patterns[3] = new SimpleWave(3);
-    patterns[4] = new RainbowBlast(4);
+    patterns[0] = new TestPattern();
+    patterns[1] = new Cloud();
+    patterns[2] = new VariablePulse();
+    patterns[3] = new SimpleWave();
+    patterns[4] = new RainbowBlast();
 
     for (int i = 0; i < 5; i++)
     {
-        state.registerPattern(i, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
+        int assignedIdx = state.registerPattern(0, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
+        patterns[i]->setParamIdx(assignedIdx);
     }
 
     globalParamsMeta[0] = {CIRCULAR, 170};
@@ -196,7 +197,7 @@ void setup()
 
     state.registerGlobalParams(globalParamsMeta);
 
-    overlays[0] = new Piano(0); //Sparkle(0);
+    overlays[0] = new Piano(); //Sparkle();
 
     Serial.begin(9600);
     Serial.println("Scarf OS 3.0");
@@ -325,7 +326,7 @@ void loop()
 
     state.setupPalette();
 
-    patterns[state.bgMode]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
+    patterns[state.activePatternIndex(0)]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
     overlays[0]->fill(layer1, STRAND_LENGTH, tick, dTick, state);
 
     memcpy(leds, layer0, sizeof(leds));

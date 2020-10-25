@@ -7,7 +7,7 @@
 class VariablePulse : public Pattern
 {
 public:
-    VariablePulse(int idx);
+    VariablePulse();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 
 private:

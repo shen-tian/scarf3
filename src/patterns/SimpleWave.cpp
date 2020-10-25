@@ -1,6 +1,6 @@
 #include "SimpleWave.h"
 
-SimpleWave::SimpleWave(int idx) : Pattern(idx, "Wave")
+SimpleWave::SimpleWave() : Pattern("Wave")
 {
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};

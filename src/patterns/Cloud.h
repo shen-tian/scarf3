@@ -7,7 +7,7 @@
 class Cloud : public Pattern
 {
 public:
-    Cloud(int idx);
+    Cloud();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 
 private:

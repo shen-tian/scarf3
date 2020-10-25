@@ -7,7 +7,7 @@
 class SimpleWave : public Pattern
 {
 public:
-    SimpleWave(int idx);
+    SimpleWave();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 };
 

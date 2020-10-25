@@ -17,7 +17,7 @@
 class Scarf : public Pattern
 {
 public:
-    Scarf(int idx);
+    Scarf();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state); 
 
 private:

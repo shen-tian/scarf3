@@ -1,6 +1,6 @@
 #include "Waterfall.h"
 
-Waterfall::Waterfall(int idx) : Pattern(idx, "Sparkle")
+Waterfall::Waterfall() : Pattern("Sparkle")
 {
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};

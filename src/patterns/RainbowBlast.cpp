@@ -1,6 +1,6 @@
 #include "RainbowBlast.h"
 
-RainbowBlast::RainbowBlast(int idx) : Pattern(idx, "Rainbow")
+RainbowBlast::RainbowBlast() : Pattern("Rainbow")
 {
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};

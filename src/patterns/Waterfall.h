@@ -7,7 +7,7 @@
 class Waterfall : public Pattern
 {
 public:
-    Waterfall(int idx);
+    Waterfall();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 };
 

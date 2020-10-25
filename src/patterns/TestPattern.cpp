@@ -1,6 +1,6 @@
 #include "TestPattern.h"
 
-TestPattern::TestPattern(int idx) : Pattern(idx, "Test")
+TestPattern::TestPattern() : Pattern("Test")
 {
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};

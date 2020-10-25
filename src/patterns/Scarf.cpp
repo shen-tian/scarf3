@@ -24,7 +24,7 @@ byte Scarf::modDist(byte x, byte y)
     return min(min(abs(x - y), abs(x - y + 256)), abs(x - y - 256));
 }
 
-Scarf::Scarf(int idx) : Pattern(idx, "Scarf")
+Scarf::Scarf() : Pattern("Scarf")
 {
     pos = 0;
 

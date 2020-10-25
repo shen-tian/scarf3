@@ -7,7 +7,7 @@
 class RainbowBlast : public Pattern
 {
 public:
-    RainbowBlast(int idx);
+    RainbowBlast();
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 };
 
