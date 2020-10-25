@@ -187,11 +187,11 @@ void setup()
         state.registerPattern(i, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
     }
 
-    globalParamsMeta[0] = {CIRCULAR, 128};
+    globalParamsMeta[0] = {CIRCULAR, 170};
     globalParamsMeta[1] = {NORMAL, 0};
     globalParamsMeta[2] = {NORMAL, 192};
-    globalParamsMeta[3] = {OCTAVE, 0};
-    globalParamsMeta[4] = {NORMAL, 0};
+    globalParamsMeta[3] = {NORMAL, 0};
+    globalParamsMeta[4] = {NORMAL, 91};
     globalParamsMeta[5] = {OCTAVE, 0};
 
     state.registerGlobalParams(globalParamsMeta);
