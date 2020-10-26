@@ -11,6 +11,7 @@ public:
     void fill(CRGB *leds, long numLEDs, long t, long dt, State &state);
 
 private:
+    uint8_t fractalNoise(uint16_t x, uint16_t y, int octave);
     long pos;
 };
 

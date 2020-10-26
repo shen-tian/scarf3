@@ -47,4 +47,6 @@ void VariablePulse::fill(CRGB *leds, long numLEDs, long t, long dt, State &state
             leds[i] = CRGB::Black;
         }
     }
+
+    fadeToBlackBy(leds, numLEDs, 255 - patternParam(state, 0));
 }
