@@ -182,7 +182,7 @@ void setup()
     patterns[0] = new TestPattern();
     patterns[1] = new Cloud();
     patterns[2] = new VariablePulse();
-    patterns[3] = new SimpleWave();
+    patterns[3] = new Scarf();
     patterns[4] = new RainbowBlast();
 
     patterns[5] = new Piano(); 
