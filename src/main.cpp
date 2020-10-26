@@ -53,7 +53,11 @@ void OnControlChange(byte channel, byte control, byte value)
     {
     // visible controls on Beatstep (left set of encoders, relative mode #1)
     case 10: 
-        // ??
+        if (value > 64)
+            state.nextPattern(1);
+        else
+            state.prevPattern(1);
+        break;
         break;
     case 74:
         state.tryChangeVisibleParam(0, (value - 64));
