@@ -13,6 +13,7 @@ enum paramType {NONE, NORMAL, CIRCULAR, OCTAVE };
 struct paramMetadata{
     paramType type;
     uint8_t defaultValue;
+    char label[4] = {};
 };
 
 struct patternMetadata{
@@ -70,6 +71,7 @@ public:
 
     uint8_t visibleParam(int idx);
     paramType visibleParamType(int idx);
+    char* visibleParamLabel(int idx);
 
     const char* getPatternLabel(int idx);
 

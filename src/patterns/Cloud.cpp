@@ -5,10 +5,15 @@ Cloud::Cloud() : Pattern("Cloud")
     pos = 0;
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};
+    strcpy(pMetadata[0].label, "LVL");
     pMetadata[1] = {OCTAVE, 96};
+    strcpy(pMetadata[1].label, "SPD");
     pMetadata[2] = {NORMAL, 128}; // blend of palette sat v.s. full
+    strcpy(pMetadata[2].label, "MIX");
     pMetadata[3] = {NORMAL, 64}; // noise octaves
+    strcpy(pMetadata[3].label, "OCT");
     pMetadata[4] = {NORMAL, 128}; // slope (1 - 3);
+    strcpy(pMetadata[4].label, "SLP");
     pMetadata[5] = {NONE, 0};
 }
 

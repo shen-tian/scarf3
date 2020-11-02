@@ -9,7 +9,7 @@ void initDisplay()
     lcd.begin();
 }
 
-void drawParam(uint8_t x, uint8_t y, uint8_t value, paramType type, bool selected)
+void drawParam(uint8_t x, uint8_t y, uint8_t value, paramType type, char* label, bool selected)
 {
     lcd.setDrawColor(selected ? 1 : 0);
     lcd.drawBox(x, y, 15, 22);
@@ -57,7 +57,12 @@ void drawParam(uint8_t x, uint8_t y, uint8_t value, paramType type, bool selecte
     }
 
     char buffer[3];
-    sprintf(buffer, "%03d", value);
+    
+    if (label[0] == 0)
+        sprintf(buffer, "%03d", value);
+    else
+        sprintf(buffer, "%s", label);
+    
     lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
     lcd.drawStr(x + 2, y + 21, buffer);
 }
@@ -166,7 +171,7 @@ void updateDisplay(State &state)
     {
         uint8_t x = 128 - (16 * 3) + (i % 3) * 16;
         uint8_t y = 1 + 22 * (i / 3);
-        drawParam(x, y, state.visibleParam(i), state.visibleParamType(i), (state.selectedIdx == i + 1));
+        drawParam(x, y, state.visibleParam(i), state.visibleParamType(i), state.visibleParamLabel(i), (state.selectedIdx == i + 1));
     }
 
     //lcd.drawGlyph(0, 63, 0x0040 + 5);

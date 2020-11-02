@@ -201,11 +201,13 @@ void setup()
     }
 
     globalParamsMeta[0] = {CIRCULAR, 170};
+    strcpy(globalParamsMeta[0].label, "HUE");
     globalParamsMeta[1] = {NORMAL, 0};
     globalParamsMeta[2] = {NORMAL, 192};
     globalParamsMeta[3] = {NORMAL, 0};
     globalParamsMeta[4] = {NORMAL, 91};
     globalParamsMeta[5] = {OCTAVE, 0};
+    strcpy(globalParamsMeta[5].label, "PLT");
 
     state.registerGlobalParams(globalParamsMeta);
 

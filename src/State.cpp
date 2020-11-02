@@ -128,6 +128,19 @@ paramType State::visibleParamType(int idx)
     }
 }
 
+char* State::visibleParamLabel(int idx)
+{
+    switch (selectedLayer)
+    {
+    case 0:
+        return gMeta.params[idx].label;
+    case 1 ... 2:
+        return pMeta[activePatternIndex()].params[idx].label;
+    default:
+        return "   ";
+    }
+}
+
 void State::recordTick(long tickMS)
 {
     fps = 1000.0 / tickMS;

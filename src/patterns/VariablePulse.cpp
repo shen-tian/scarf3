@@ -4,11 +4,17 @@ VariablePulse::VariablePulse() : Pattern("V Pulse")
 {
     pMetadata = new paramMetadata[6];
     pMetadata[0] = {NORMAL, 128};
+    strcpy(pMetadata[0].label, "LVL");
     pMetadata[1] = {OCTAVE, 96};
+    strcpy(pMetadata[1].label, "SPD");
     pMetadata[2] = {NORMAL, 30};  // period (s)
+    strcpy(pMetadata[2].label, "PRD");
     pMetadata[3] = {NORMAL, 15};  // min width
+    strcpy(pMetadata[3].label, "MIN");
     pMetadata[4] = {NORMAL, 255}; // max width
+    strcpy(pMetadata[4].label, "MAX");
     pMetadata[5] = {NORMAL, 255}; // palette range
+    strcpy(pMetadata[5].label, "RNG");
 }
 
 // return a cyclical (sine wave) value between min and max
