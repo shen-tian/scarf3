@@ -61,13 +61,22 @@ void drawParam(uint8_t x, uint8_t y, uint8_t value, paramType type, char* label,
 
     char buffer[3];
     
-    if (label[0] == 0)
-        sprintf(buffer, "%03d", value);
-    else
-        sprintf(buffer, "%s", label);
+    switch(type){
+    case NORMAL:
+    case CIRCULAR:
+    case OCTAVE:
+        if (label[0] == 0)
+            sprintf(buffer, "%03d", value);
+        else
+            sprintf(buffer, "%s", label);
+        lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
+        lcd.drawStr(x + 2, y + 21, buffer);
+        break;
+    case NONE:
+        break;
+    }
+
     
-    lcd.setFont(u8g2_font_tom_thumb_4x6_mf);
-    lcd.drawStr(x + 2, y + 21, buffer);
 }
 
 void drawLayer(uint8_t x, uint8_t y, bool selected)
