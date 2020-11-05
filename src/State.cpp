@@ -313,10 +313,10 @@ void State::tryChangeVisibleParam(int idx, int amount){
 
 void State::nextPattern(int layerIdx)
 {
-    selectedPattern[layerIdx] = constrain(selectedPattern[layerIdx] + 1, 0, patternCount[layerIdx] - 1);
+    selectedPattern[layerIdx] = addmod8(selectedPattern[layerIdx], 1, patternCount[layerIdx]);
 }
 
 void State::prevPattern(int layerIdx)
 {
-    selectedPattern[layerIdx] = constrain(selectedPattern[layerIdx] - 1, 0, patternCount[layerIdx] - 1);
+    selectedPattern[layerIdx] = addmod8(selectedPattern[layerIdx], patternCount[layerIdx] - 1, patternCount[layerIdx]);
 }
