@@ -206,6 +206,7 @@ void setup()
     globalParamsMeta[2] = {NORMAL, 192};
     globalParamsMeta[3] = {NORMAL, 0};
     globalParamsMeta[4] = {NORMAL, 91};
+    strcpy(globalParamsMeta[4].label, "WTH");
     globalParamsMeta[5] = {OCTAVE, 0};
     strcpy(globalParamsMeta[5].label, "PLT");
 
@@ -217,6 +218,8 @@ void setup()
     Serial.println("Scarf OS 3.0");
 
     initDisplay();
+
+    delay(2000);
 
     pinMode(1, INPUT_PULLUP);
     pinMode(2, INPUT_PULLUP);

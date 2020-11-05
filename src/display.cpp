@@ -7,6 +7,9 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C lcd(U8G2_R2, 19, 18, U8X8_PIN_NONE);
 void initDisplay()
 {
     lcd.begin();
+    lcd.clear();
+    lcd.drawXBM(32, 0, 64, 64, scarf_bits);
+    lcd.sendBuffer();
 }
 
 void drawParam(uint8_t x, uint8_t y, uint8_t value, paramType type, char* label, bool selected)
