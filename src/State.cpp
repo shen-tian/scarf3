@@ -247,6 +247,12 @@ void State::setupPalette()
         case 160 ... 191:
             currentPalette = bhw1_06_gp;
             break;
+        case 192 ... 223:
+            currentPalette = HeatColors_p;
+            break;
+        case 224 ... 255:
+            currentPalette = GMT_ocean_gp;
+            break;
     }
 }
 

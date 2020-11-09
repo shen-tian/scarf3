@@ -19,6 +19,7 @@
 #include "patterns/Sparkle.h"
 #include "patterns/TestPattern.h"
 #include "patterns/Piano.h"
+#include "patterns/Fire2012.h"
 
 CRGB leds[STRAND_LENGTH];
 
@@ -179,22 +180,25 @@ paramMetadata globalParamsMeta[6];
 
 void setup()
 {
-    patterns[0] = new TestPattern();
+    patterns[0] = new TestPattern(); // TestPattern();
     patterns[1] = new Cloud();
     patterns[2] = new VariablePulse();
     patterns[3] = new Scarf();
     patterns[4] = new RainbowBlast();
+    patterns[5] = new Fire2012();
 
-    patterns[5] = new Piano(); 
-    patterns[6] = new Sparkle();
 
-    for (int i = 0; i <= 4; i++)
+    patterns[6] = new Piano(); 
+    patterns[7] = new Sparkle();
+    patterns[8] = new Fire2012();
+
+    for (int i = 0; i <= 5; i++)
     {
         int assignedIdx = state.registerPattern(0, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
         patterns[i]->setParamIdx(assignedIdx);
     }
 
-    for (int i = 5; i <= 6; i++)
+    for (int i = 6; i <= 8; i++)
     {
         int assignedIdx = state.registerPattern(1, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
         patterns[i]->setParamIdx(assignedIdx);

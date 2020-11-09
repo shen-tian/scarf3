@@ -21,4 +21,20 @@ const TProgmemRGBGradientPalette_byte aurora_gpp[] = {
   219, 153,227,190,
   255, 255,255,255};
 
+  // Gradient palette "GMT_ocean_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/gmt/tn/GMT_ocean.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 36 bytes of program space.
+
+const TProgmemRGBGradientPalette_byte GMT_ocean_gp [] = {
+    0,   0,  0,  0,
+   31,   0,  1,  1,
+   63,   0,  1,  4,
+   95,   0, 19, 42,
+  127,   0, 79,138,
+  159,  15,144,112,
+  191,  91,233, 89,
+  223, 155,244,158,
+  255, 242,255,255};
+
 #endif
