@@ -158,7 +158,7 @@ void updateDisplay(State &state)
         lcd.setDrawColor(1);
     }
 
-    if (state.selectedLayer == 1 || state.selectedLayer == 2)
+    if (state.selectedLayer == 1 || state.selectedLayer == 2 || state.selectedLayer == 3)
     {
         lcd.drawStr(10, 51, state.getPatternLabel(state.activePatternIndex()));
     }

@@ -20,6 +20,8 @@
 #include "patterns/Fire2012.h"
 #include "patterns/Particles.h"
 
+#include "patterns/DelayFX.h"
+
 CRGB leds[STRAND_LENGTH];
 
 CRGB layer0[STRAND_LENGTH];
@@ -186,6 +188,8 @@ void setup()
     patterns[7] = new Sparkle();
     patterns[8] = new Fire2012();
 
+    patterns[9] = new DelayFX();
+
     for (int i = 0; i <= 5; i++)
     {
         int assignedIdx = state.registerPattern(0, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
@@ -195,6 +199,12 @@ void setup()
     for (int i = 6; i <= 8; i++)
     {
         int assignedIdx = state.registerPattern(1, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
+        patterns[i]->setParamIdx(assignedIdx);
+    }
+
+    for (int i = 9; i <=9; i++)
+    {
+        int assignedIdx = state.registerPattern(2, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
         patterns[i]->setParamIdx(assignedIdx);
     }
 
@@ -278,7 +288,7 @@ void updateTransport()
     state.recordTick(nowT - t);
 
     tick = nowV;
-    dTick = constrain(nowV - v, 0, 100); // check dTick is not huge on init
+    dTick = constrain(nowV - v, 0, (unsigned long) 100); // check dTick is not huge on init
     v = nowV;
     t = nowT;
 }
@@ -294,13 +304,15 @@ void loop()
 
     state.setupPalette();
 
-    Serial.println(dTick);
+    // Serial.println(dTick);
 
     patterns[state.activePatternIndex(0)]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
     patterns[state.activePatternIndex(1)]->fill(layer1, STRAND_LENGTH, tick, dTick, state);
 
     memcpy(leds, layer0, sizeof(leds));
     nblend(leds, layer1, STRAND_LENGTH, state.globalParams[2]);
+
+    patterns[9]->fill(leds, STRAND_LENGTH, tick, dTick, state);
 
     updateDisplay(state);
 

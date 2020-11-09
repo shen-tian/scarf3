@@ -24,7 +24,7 @@ struct patternMetadata{
 class State
 {
 public:
-    int selectedPattern[2] = {0, 0};
+    int selectedPattern[3] = {0, 0, 0};
 
     uint8_t patternParams[MAX_PATTERNS][6];
 
@@ -95,8 +95,8 @@ private:
     patternMetadata gMeta = patternMetadata();
 
     int numPatterns = 0;
-    int patternCount[2] = {0 , 0};
-    int patternIndex[2][MAX_PATTERNS / 2];
+    int patternCount[3] = {0 , 0, 0};
+    int patternIndex[3][MAX_PATTERNS / 2];
 };
 
 #endif

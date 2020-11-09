@@ -16,7 +16,7 @@ void State::incSelected()
             break;
         }
         break;
-    case 1 ... 2:
+    case 1 ... 3:
         switch (selectedIdx)
         {
         case 0:
@@ -45,7 +45,7 @@ void State::decSelected()
             break;
         }
         break;
-    case 1 ... 2:
+    case 1 ... 3:
         switch (selectedIdx)
         {
         case 0:
@@ -80,7 +80,7 @@ void State::zeroSelected()
             break;
         }
         break;
-    case 1 ... 2:
+    case 1 ... 3:
         switch (selectedIdx)
         {
         case 0:
@@ -108,7 +108,7 @@ uint8_t State::visibleParam(int idx)
     {
     case 0:
         return globalParams[idx];
-    case 1 ... 2:
+    case 1 ... 3:
         return patternParams[activePatternIndex()][idx];
     default:
         return 7;
@@ -121,7 +121,7 @@ paramType State::visibleParamType(int idx)
     {
     case 0:
         return gMeta.params[idx].type;
-    case 1 ... 2:
+    case 1 ... 3:
         return pMeta[activePatternIndex()].params[idx].type;
     default:
         return NONE;
@@ -134,7 +134,7 @@ char* State::visibleParamLabel(int idx)
     {
     case 0:
         return gMeta.params[idx].label;
-    case 1 ... 2:
+    case 1 ... 3:
         return pMeta[activePatternIndex()].params[idx].label;
     default:
         return "   ";
@@ -185,7 +185,7 @@ int State::registerPattern(int layerIdx, const char *label, paramMetadata *param
 int State::activePatternIndex(int layer)
 {
     switch(layer){
-        case 0 ... 1: 
+        case 0 ... 2: 
             return patternIndex[layer][selectedPattern[layer]];
         default:
             return 0;
@@ -194,7 +194,7 @@ int State::activePatternIndex(int layer)
 
 int State::activePatternIndex()
 {
-    if (selectedLayer == 1 || selectedLayer == 2)
+    if (selectedLayer == 1 || selectedLayer == 2 || selectedLayer == 3)
         return activePatternIndex(selectedLayer - 1);
     else
         return -1;
@@ -311,7 +311,7 @@ void State::tryChangeVisibleParam(int idx, int amount){
     case 0:    
         tryChangeGlobalParam(idx, amount);
         break;  
-    case 1 ... 2: 
+    case 1 ... 3: 
         tryChangePatternParam(activePatternIndex(), idx, amount);
         break;
     }
