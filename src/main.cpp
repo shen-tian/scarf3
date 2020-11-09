@@ -18,6 +18,7 @@
 #include "patterns/TestPattern.h"
 #include "patterns/Piano.h"
 #include "patterns/Fire2012.h"
+#include "patterns/Particles.h"
 
 CRGB leds[STRAND_LENGTH];
 
@@ -173,7 +174,7 @@ paramMetadata globalParamsMeta[6];
 
 void setup()
 {
-    patterns[0] = new TestPattern(); // TestPattern();
+    patterns[0] = new Particles();// TestPattern();
     patterns[1] = new Cloud();
     patterns[2] = new VariablePulse();
     patterns[3] = new Scarf();
@@ -277,7 +278,7 @@ void updateTransport()
     state.recordTick(nowT - t);
 
     tick = nowV;
-    dTick = nowV - v;
+    dTick = constrain(nowV - v, 0, 100); // check dTick is not huge on init
     v = nowV;
     t = nowT;
 }
@@ -292,6 +293,8 @@ void loop()
     midi1.read(1);
 
     state.setupPalette();
+
+    Serial.println(dTick);
 
     patterns[state.activePatternIndex(0)]->fill(layer0, STRAND_LENGTH, tick, dTick, state);
     patterns[state.activePatternIndex(1)]->fill(layer1, STRAND_LENGTH, tick, dTick, state);
