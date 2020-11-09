@@ -1,5 +1,4 @@
 #include <FastLED.h>
-#include <Bounce2.h>
 #include <Encoder.h>
 
 #include <USBHost_t36.h>
@@ -7,6 +6,7 @@
 #include "State.h"
 #include "display.h"
 #include "palettes.h"
+#include "PhysicalControls.h"
 
 #include "hal/default.h"
 
@@ -26,15 +26,13 @@ CRGB leds[STRAND_LENGTH];
 CRGB layer0[STRAND_LENGTH];
 CRGB layer1[STRAND_LENGTH];
 
-Bounce debouncer = Bounce();
-Bounce debouncer2 = Bounce();
-Bounce debouncer3 = Bounce();
-
 Encoder knobLeft(3, 4);
 int knobPos = 0;
 
 USBHost myusb;
 MIDIDevice midi1(myusb);
+
+PhysicalControls* phyControls;
 
 State state = State();
 
@@ -223,19 +221,9 @@ void setup()
 
     initDisplay();
 
+    phyControls = new PhysicalControls(&state);
+
     delay(2000);
-
-    pinMode(1, INPUT_PULLUP);
-    pinMode(2, INPUT_PULLUP);
-
-    debouncer.attach(1);
-    debouncer.interval(20);
-
-    debouncer2.attach(2);
-    debouncer2.interval(20);
-
-    debouncer3.attach(0);
-    debouncer3.interval(20);
 
     myusb.begin();
 
@@ -301,25 +289,6 @@ void updateTransport()
 
 void handleBuiltInControls()
 {
-    debouncer.update();
-    debouncer2.update();
-    debouncer3.update();
-
-    if (debouncer3.fell())
-    {
-        state.zeroSelected();
-    }
-
-    if (debouncer2.fell())
-    {
-        state.cycleParam();
-    }
-
-    if (debouncer.fell())
-    {
-        state.cycleLayer();
-    }
-
     int newKnobPos = knobLeft.read();
 
     if (newKnobPos - knobPos >= 4)
@@ -338,6 +307,7 @@ void handleBuiltInControls()
 
 void loop()
 {
+    phyControls->update();
     updateTransport();
 
     handleBuiltInControls();
