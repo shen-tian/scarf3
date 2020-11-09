@@ -1,6 +1,4 @@
 #include <FastLED.h>
-#include <Encoder.h>
-
 #include <USBHost_t36.h>
 
 #include "State.h"
@@ -25,9 +23,6 @@ CRGB leds[STRAND_LENGTH];
 
 CRGB layer0[STRAND_LENGTH];
 CRGB layer1[STRAND_LENGTH];
-
-Encoder knobLeft(3, 4);
-int knobPos = 0;
 
 USBHost myusb;
 MIDIDevice midi1(myusb);
@@ -287,30 +282,11 @@ void updateTransport()
     t = nowT;
 }
 
-void handleBuiltInControls()
-{
-    int newKnobPos = knobLeft.read();
-
-    if (newKnobPos - knobPos >= 4)
-    {
-        state.incSelected();
-        knobPos = newKnobPos;
-    }
-
-    if (knobPos - newKnobPos >= 4)
-    {
-        state.decSelected();
-        knobPos = newKnobPos;
-    }
-
-}
-
 void loop()
 {
     phyControls->update();
     updateTransport();
 
-    handleBuiltInControls();
     myusb.Task();
 
     midi1.read(1);

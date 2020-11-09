@@ -20,6 +20,9 @@ PhysicalControls::PhysicalControls(State* state){
     ButtonConfig* buttonConfigTwo = btnTwo.getButtonConfig();
     buttonConfigTwo->setIEventHandler(this);
     // buttonConfigTwo->setFeature(ButtonConfig::kFeatureClick);
+
+    knob = new Encoder(ENC_PIN_A, ENC_PIN_B);
+    knobPos = 0;
 }
 
 void PhysicalControls::handleEvent(AceButton* button, uint8_t eventType, uint8_t buttonState)
@@ -49,4 +52,18 @@ void PhysicalControls::update()
     btnEncoder.check();
     btnOne.check();
     btnTwo.check();
+
+    int newKnobPos = knob->read();
+
+    if (newKnobPos - knobPos >= 4)
+    {
+        __state->incSelected();
+        knobPos = newKnobPos;
+    }
+
+    if (knobPos - newKnobPos >= 4)
+    {
+        __state->decSelected();
+        knobPos = newKnobPos;
+    }
 }
