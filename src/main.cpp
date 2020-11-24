@@ -21,6 +21,7 @@
 #include "patterns/Particles.h"
 
 #include "patterns/DelayFX.h"
+#include "patterns/ColourFX.h"
 
 CRGB leds[STRAND_LENGTH];
 
@@ -176,10 +177,10 @@ paramMetadata globalParamsMeta[6];
 
 void setup()
 {
-    patterns[0] = new Particles();// TestPattern();
+    patterns[0] = new TestPattern();
     patterns[1] = new Cloud();
     patterns[2] = new VariablePulse();
-    patterns[3] = new Scarf();
+    patterns[3] = new Particles();
     patterns[4] = new RainbowBlast();
     patterns[5] = new Fire2012();
 
@@ -189,6 +190,7 @@ void setup()
     patterns[8] = new Fire2012();
 
     patterns[9] = new DelayFX();
+    patterns[10] = new ColourFX();
 
     for (int i = 0; i <= 5; i++)
     {
@@ -202,7 +204,7 @@ void setup()
         patterns[i]->setParamIdx(assignedIdx);
     }
 
-    for (int i = 9; i <=9; i++)
+    for (int i = 9; i <=10; i++)
     {
         int assignedIdx = state.registerPattern(2, patterns[i]->getLabel(), patterns[i]->getParamMetaData());
         patterns[i]->setParamIdx(assignedIdx);
@@ -313,6 +315,7 @@ void loop()
     nblend(leds, layer1, STRAND_LENGTH, state.globalParams[2]);
 
     patterns[9]->fill(leds, STRAND_LENGTH, tick, dTick, state);
+    patterns[10]->fill(leds, STRAND_LENGTH, tick, dTick, state);
 
     updateDisplay(state);
 
