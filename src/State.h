@@ -44,6 +44,8 @@ public:
 
     int currentBeat = 0;
 
+    uint8_t intensity;
+
     float bpm = 120.0;
 
     CRGBPalette16 currentPalette;
@@ -68,6 +70,8 @@ public:
     void nextBeat();
 
     void recordTick(long tickMS);
+
+    void analyze(CRGB *leds);
 
     uint8_t visibleParam(int idx);
     paramType visibleParamType(int idx);

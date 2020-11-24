@@ -326,3 +326,17 @@ void State::prevPattern(int layerIdx)
 {
     selectedPattern[layerIdx] = addmod8(selectedPattern[layerIdx], patternCount[layerIdx] - 1, patternCount[layerIdx]);
 }
+
+void State::analyze(CRGB *leds)
+{
+    int totalIntensity = 0;
+
+    for (int i = 0; i < STRAND_LENGTH; i++)
+    {
+        totalIntensity += leds[i].red;
+        totalIntensity += leds[i].green;
+        totalIntensity += leds[i].blue;
+    }
+
+    intensity = totalIntensity / (3 * STRAND_LENGTH);
+}

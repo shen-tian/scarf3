@@ -317,6 +317,8 @@ void loop()
     patterns[9]->fill(leds, STRAND_LENGTH, tick, dTick, state);
     patterns[10]->fill(leds, STRAND_LENGTH, tick, dTick, state);
 
+    state.analyze(leds);
+
     updateDisplay(state);
 
     FastLED.show(); // display this frame

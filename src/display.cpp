@@ -174,6 +174,8 @@ void updateDisplay(State &state)
 
     drawBeat(14, 16, state.bpm, state.currentBeat);
 
+    lcd.drawBox(14, 28, map(state.intensity, 0, 255, 0, 40), 4);
+
     // lcd.drawVLine(45, 0, 55);
     // drawLevel(48 - 3, 4, state.visibleParam(0));
 
