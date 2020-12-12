@@ -240,7 +240,7 @@ void setup()
     midi1.setHandleNoteOff(onNoteOff);
 
     FastLED.addLeds<APA102, 11, 13, BGR>(leds, STRAND_LENGTH);
-    FastLED.addLeds<1, WS2811, 10, RGB>(leds, STRAND_LENGTH);
+    FastLED.addLeds<1, WS2811, 10, GRB>(leds, STRAND_LENGTH);
 
     FastLED.setBrightness(255);
 }
