@@ -16,7 +16,7 @@ Particles::Particles() : Pattern("Particles")
 
     for (int i = 0; i < MAX_PARTICLES; i++)
     {
-        particles[i].location = random8(144);
+        particles[i].location = random8(STRAND_LENGTH);
         particles[i].velocity = 0;
     }
 }

@@ -12,7 +12,7 @@ public:
 
 private:
      // Array of temperature readings at each simulation cell
-    byte heat[144];
+    byte heat[STRAND_LENGTH];
 };
 
 #endif

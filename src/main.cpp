@@ -5,6 +5,7 @@
 #include "display.h"
 #include "palettes.h"
 #include "PhysicalControls.h"
+#include "Outputs.h"
 
 #include "hal/default.h"
 
@@ -32,6 +33,8 @@ USBHost myusb;
 MIDIDevice midi1(myusb);
 
 PhysicalControls* phyControls;
+
+Outputs* outputs;
 
 State state = State();
 
@@ -239,10 +242,7 @@ void setup()
     midi1.setHandleNoteOn(onNoteOn);
     midi1.setHandleNoteOff(onNoteOff);
 
-    FastLED.addLeds<APA102, 11, 13, BGR>(leds, STRAND_LENGTH);
-    FastLED.addLeds<1, WS2811, 10, GRB>(leds, STRAND_LENGTH);
-
-    FastLED.setBrightness(255);
+    outputs = new Outputs();
 }
 
 unsigned long tick = 0;
@@ -321,6 +321,6 @@ void loop()
 
     updateDisplay(state);
 
-    FastLED.show(); // display this frame
+    outputs->display(leds);
     // FastLED.delay(0);
 }
